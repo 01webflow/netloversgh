@@ -14,7 +14,187 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cart_items: {
+        Row: {
+          bundle_id: string | null
+          created_at: string | null
+          id: string
+          quantity: number | null
+          recipient_phone: string | null
+          user_id: string
+        }
+        Insert: {
+          bundle_id?: string | null
+          created_at?: string | null
+          id?: string
+          quantity?: number | null
+          recipient_phone?: string | null
+          user_id: string
+        }
+        Update: {
+          bundle_id?: string | null
+          created_at?: string | null
+          id?: string
+          quantity?: number | null
+          recipient_phone?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "data_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_bundles: {
+        Row: {
+          created_at: string | null
+          data_amount: string
+          delivery_type: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+          provider: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_amount: string
+          delivery_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+          provider: string
+        }
+        Update: {
+          created_at?: string | null
+          data_amount?: string
+          delivery_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          provider?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          bundle_id: string | null
+          created_at: string | null
+          data_amount: string
+          id: string
+          order_status: string | null
+          package_name: string
+          payment_method: string | null
+          payment_status: string | null
+          price: number
+          recipient_phone: string
+          user_id: string
+        }
+        Insert: {
+          bundle_id?: string | null
+          created_at?: string | null
+          data_amount: string
+          id?: string
+          order_status?: string | null
+          package_name: string
+          payment_method?: string | null
+          payment_status?: string | null
+          price: number
+          recipient_phone: string
+          user_id: string
+        }
+        Update: {
+          bundle_id?: string | null
+          created_at?: string | null
+          data_amount?: string
+          id?: string
+          order_status?: string | null
+          package_name?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          price?: number
+          recipient_phone?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "data_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string | null
+          user_id: string
+          wallet_balance: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id: string
+          wallet_balance?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wallet_balance?: number | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          reference: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reference?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          reference?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
