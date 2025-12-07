@@ -3,34 +3,59 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PricingPage from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Community from "./pages/Community";
+import Dashboard from "./pages/Dashboard";
+import DashboardOrders from "./pages/DashboardOrders";
+import DashboardWallet from "./pages/DashboardWallet";
+import DashboardAccount from "./pages/DashboardAccount";
+import Bundles from "./pages/Bundles";
+import BundleDetail from "./pages/BundleDetail";
+import Checkout from "./pages/Checkout";
+import Cart from "./pages/Cart";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/community" element={<Community />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/orders" element={<DashboardOrders />} />
+              <Route path="/dashboard/orders/:provider" element={<DashboardOrders />} />
+              <Route path="/dashboard/wallet" element={<DashboardWallet />} />
+              <Route path="/dashboard/account" element={<DashboardAccount />} />
+              <Route path="/dashboard/transactions" element={<DashboardWallet />} />
+              <Route path="/bundles" element={<Bundles />} />
+              <Route path="/bundles/:providerId" element={<BundleDetail />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CartProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
