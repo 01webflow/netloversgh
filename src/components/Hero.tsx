@@ -6,10 +6,10 @@ const Hero = () => {
     <section className="hero-gradient py-24 md:py-32">
       <div className="container mx-auto px-4 text-center">
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight mb-6">
-          Affordable network accessories and services
+          Your Trusted Data Bundle Provider
         </h1>
         <p className="text-lg md:text-xl text-primary-foreground/80 mb-8">
-          Sign up today!
+          Get affordable MTN, AirtelTigo & Telecel data bundles instantly. Fast, reliable, and secure.
         </p>
         <Link to="/register">
           <Button

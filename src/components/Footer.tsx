@@ -7,13 +7,13 @@ const Footer = () => {
           <Link to="/" className="flex items-center gap-2">
             <Wifi className="h-5 w-5 text-primary" />
             <span className="text-lg font-semibold">
-              <span className="text-primary">Netlovers</span>
-              <span className="text-foreground"> GH</span>
+              <span className="text-primary">NetLovers</span>
+              <span className="text-foreground">GH</span>
             </span>
           </Link>
           
           <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} NetGear GH. All rights reserved.
+            © {new Date().getFullYear()} NetLoversGH. All rights reserved.
           </p>
         </div>
       </div>

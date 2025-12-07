@@ -7,16 +7,19 @@ const Header = () => {
     name: "Home",
     href: "/"
   }, {
+    name: "Pricing",
+    href: "/pricing"
+  }, {
     name: "Login",
     href: "/login"
   }, {
     name: "Register",
     href: "/register"
   }, {
-    name: "Join our Community",
+    name: "Community",
     href: "/community"
   }, {
-    name: "Contact Admin",
+    name: "Contact",
     href: "/contact"
   }];
   return <header className="bg-background shadow-sm sticky top-0 z-50">
@@ -26,8 +29,8 @@ const Header = () => {
           <Link to="/" className="flex items-center gap-2">
             <Wifi className="h-6 w-6 text-primary" />
             <span className="text-xl font-semibold">
-              <span className="text-primary">Netlovers</span>
-              <span className="text-foreground"> GH</span>
+              <span className="text-primary">NetLovers</span>
+              <span className="text-foreground">GH</span>
             </span>
           </Link>
 
