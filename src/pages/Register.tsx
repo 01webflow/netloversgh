@@ -6,6 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateGhanaPhone } from "@/lib/validation";
+
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+};
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
@@ -25,8 +31,26 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate email format
+    if (!validateEmail(formData.email)) {
+      toast({ title: "Error", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+
+    // Validate phone number (Ghana format)
+    if (!validateGhanaPhone(formData.phone)) {
+      toast({ title: "Error", description: "Please enter a valid Ghana phone number (10 digits starting with 0)", variant: "destructive" });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
 
