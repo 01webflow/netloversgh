@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { validateGhanaPhone, sanitizePhone } from "@/lib/validation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
 interface Bundle {
   id: string;
   provider: string;
@@ -55,22 +55,36 @@ const BundleDetail = () => {
   }, [providerId]);
 
   const handleAddToCart = (bundle: Bundle) => {
-    if (!recipientPhone && !useMyNumber) {
-      toast({
-        title: "Phone Required",
-        description: "Please enter a recipient phone number",
-        variant: "destructive",
-      });
-      return;
+    if (!useMyNumber) {
+      if (!recipientPhone) {
+        toast({
+          title: "Phone Required",
+          description: "Please enter a recipient phone number",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const cleanedPhone = sanitizePhone(recipientPhone);
+      if (!validateGhanaPhone(cleanedPhone)) {
+        toast({
+          title: "Invalid Phone Number",
+          description: "Please enter a valid 10-digit Ghana phone number starting with 0",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
+    const validPhone = useMyNumber ? "My Number" : sanitizePhone(recipientPhone);
+    
     addItem({
       bundleId: bundle.id,
       provider: bundle.provider,
       name: bundle.name,
       dataAmount: bundle.data_amount,
       price: bundle.price,
-      recipientPhone: useMyNumber ? "My Number" : recipientPhone,
+      recipientPhone: validPhone,
       quantity: 1,
     });
 
@@ -81,19 +95,33 @@ const BundleDetail = () => {
   };
 
   const handleProceed = (bundle: Bundle) => {
-    if (!recipientPhone && !useMyNumber) {
-      toast({
-        title: "Phone Required",
-        description: "Please enter a recipient phone number",
-        variant: "destructive",
-      });
-      return;
+    if (!useMyNumber) {
+      if (!recipientPhone) {
+        toast({
+          title: "Phone Required",
+          description: "Please enter a recipient phone number",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const cleanedPhone = sanitizePhone(recipientPhone);
+      if (!validateGhanaPhone(cleanedPhone)) {
+        toast({
+          title: "Invalid Phone Number",
+          description: "Please enter a valid 10-digit Ghana phone number starting with 0",
+          variant: "destructive",
+        });
+        return;
+      }
     }
+
+    const validPhone = useMyNumber ? "My Number" : sanitizePhone(recipientPhone);
 
     navigate("/checkout", {
       state: {
         bundle,
-        recipientPhone: useMyNumber ? "My Number" : recipientPhone,
+        recipientPhone: validPhone,
       },
     });
   };

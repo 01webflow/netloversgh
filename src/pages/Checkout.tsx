@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { validateGhanaPhone, sanitizePhone } from "@/lib/validation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -71,11 +72,27 @@ const Checkout = () => {
       return;
     }
 
+    // Validate phone number (skip validation for "My Number" which is resolved from user profile)
+    let validatedPhone = recipientPhone;
+    if (recipientPhone !== "My Number") {
+      const cleanedPhone = sanitizePhone(recipientPhone);
+      if (!validateGhanaPhone(cleanedPhone)) {
+        toast({
+          title: "Invalid Phone Number",
+          description: "Please enter a valid 10-digit Ghana phone number starting with 0",
+          variant: "destructive",
+        });
+        navigate(-1);
+        return;
+      }
+      validatedPhone = cleanedPhone;
+    }
+
     // Create order
     const { error } = await supabase.from("orders").insert({
       user_id: user.id,
       bundle_id: bundle.id,
-      recipient_phone: recipientPhone,
+      recipient_phone: validatedPhone,
       package_name: bundle.name,
       data_amount: bundle.data_amount,
       price: bundle.price,
