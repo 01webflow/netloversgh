@@ -72,6 +72,29 @@ const Checkout = () => {
       return;
     }
 
+    // Check wallet balance before attempting wallet payment
+    if (selectedPayment === "wallet") {
+      const walletBalance = profile?.wallet_balance || 0;
+      if (walletBalance < bundle.price) {
+        toast({
+          title: "Insufficient Balance",
+          description: `You need ₵${bundle.price.toFixed(2)} but only have ₵${walletBalance.toFixed(2)}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // MoMo payments require Paystack integration (to be implemented)
+    if (selectedPayment === "momo") {
+      toast({
+        title: "Coming Soon",
+        description: "Mobile Money payments will be available soon. Please use wallet for now.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate phone number (skip validation for "My Number" which is resolved from user profile)
     let validatedPhone = recipientPhone;
     if (recipientPhone !== "My Number") {
