@@ -2,75 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 220 20% 97%;
     --foreground: 220 13% 18%;
 
-    --card: 210 20% 98%;
+    --card: 0 0% 100%;
     --card-foreground: 220 13% 18%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 18%;
 
-    --primary: 210 63% 45%;
+    --primary: 250 70% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 96%;
+    --secondary: 220 20% 94%;
     --secondary-foreground: 220 13% 18%;
 
-    --muted: 210 20% 96%;
+    --muted: 220 20% 94%;
     --muted-foreground: 215 14% 45%;
 
-    --accent: 210 63% 45%;
+    --accent: 180 70% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 210 63% 45%;
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 250 70% 55%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    /* Custom NetGear colors */
-    --hero-gradient-start: 210 55% 25%;
-    --hero-gradient-end: 210 50% 40%;
-    --netgear-blue: 210 63% 45%;
+    /* Custom NetLoversGH colors */
+    --hero-gradient-start: 250 55% 35%;
+    --hero-gradient-end: 280 60% 45%;
+    --netgear-blue: 250 70% 55%;
     --netgear-dark: 220 13% 18%;
+    
+    /* Glassmorphism tokens */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 100% / 0.3;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    
+    /* Network colors */
+    --mtn-yellow: 45 100% 50%;
+    --telecel-red: 0 80% 50%;
+    --at-blue: 210 90% 45%;
   }
 
   .dark {
-    --background: 220 13% 10%;
+    --background: 230 25% 8%;
     --foreground: 0 0% 98%;
 
-    --card: 220 13% 14%;
+    --card: 230 25% 12%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 13% 14%;
+    --popover: 230 25% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 210 63% 50%;
+    --primary: 250 70% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 18%;
+    --secondary: 230 25% 16%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 13% 18%;
+    --muted: 230 25% 16%;
     --muted-foreground: 215 14% 65%;
 
-    --accent: 210 63% 50%;
+    --accent: 180 70% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 30%;
+    --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 20%;
-    --input: 220 13% 20%;
-    --ring: 210 63% 50%;
+    --border: 230 25% 20%;
+    --input: 230 25% 20%;
+    --ring: 250 70% 60%;
+    
+    /* Glassmorphism tokens - dark */
+    --glass-bg: 230 25% 15% / 0.6;
+    --glass-border: 0 0% 100% / 0.1;
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 }
 
@@ -80,9 +95,113 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Poppins', sans-serif;
   }
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply relative backdrop-blur-xl rounded-2xl border;
+    background: hsl(var(--glass-bg));
+    border-color: hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+  
+  .glass-card-strong {
+    @apply relative backdrop-blur-2xl rounded-2xl border;
+    background: hsl(var(--glass-bg));
+    border-color: hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+  
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--hero-gradient-start)) 0%, hsl(var(--hero-gradient-end)) 100%);
+  }
+  
+  .gradient-mesh {
+    background: 
+      radial-gradient(at 40% 20%, hsl(var(--primary) / 0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsl(var(--accent) / 0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsl(var(--primary) / 0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsl(var(--accent) / 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(var(--primary) / 0.1) 0px, transparent 50%);
+  }
+  
+  /* Network badges */
+  .network-mtn {
+    @apply bg-yellow-400 text-yellow-900;
+  }
+  
+  .network-telecel {
+    @apply bg-red-500 text-white;
+  }
+  
+  .network-at {
+    @apply bg-blue-500 text-white;
+  }
+  
+  /* Animated glow effect */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2);
+  }
+  
+  /* Floating animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Pulse ring */
+  .pulse-ring {
+    @apply relative;
+  }
+  
+  .pulse-ring::before {
+    content: '';
+    @apply absolute inset-0 rounded-full;
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    background: hsl(var(--primary) / 0.3);
+  }
+  
+  /* Number styling */
+  .font-mono-numbers {
+    font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: 'tnum' 1;
+  }
+}
+
+@layer utilities {
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 20px 40px -15px hsl(var(--primary) / 0.3);
+  }
+}
+
+/* Keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* Hero gradient background */
