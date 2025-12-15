@@ -21,8 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, RefreshCw, ShoppingCart } from "lucide-react";
 import { format } from "date-fns";
+import { NetworkBadge } from "@/components/dashboard/widgets/NetworkBadge";
+import { useToast } from "@/hooks/use-toast";
 
 interface Order {
   id: string;
@@ -34,13 +36,17 @@ interface Order {
   payment_status: string;
   order_status: string;
   created_at: string;
+  bundle_id: string | null;
 }
 
 const DashboardOrders = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [buyAgainLoading, setBuyAgainLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -64,172 +70,194 @@ const DashboardOrders = () => {
     fetchOrders();
   }, [user]);
 
+  const handleBuyAgain = async (order: Order) => {
+    if (!order.bundle_id) {
+      toast({
+        title: "Unable to Buy Again",
+        description: "Bundle information not available",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setBuyAgainLoading(order.id);
+    
+    const { data: bundle } = await supabase
+      .from("data_bundles")
+      .select("*")
+      .eq("id", order.bundle_id)
+      .maybeSingle();
+
+    if (bundle) {
+      navigate("/checkout", {
+        state: {
+          bundle,
+          recipientPhone: order.recipient_phone
+        }
+      });
+    } else {
+      toast({
+        title: "Bundle Not Found",
+        description: "This bundle may no longer be available",
+        variant: "destructive"
+      });
+    }
+    
+    setBuyAgainLoading(null);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center gradient-mesh">
+        <div className="glass-card p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        </div>
       </div>
     );
   }
 
   if (!user) return null;
 
-  const filteredOrders = orders.filter(
-    (order) =>
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = 
       order.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.recipient_phone.includes(searchTerm)
-  );
+      order.recipient_phone.includes(searchTerm);
+    const matchesStatus = statusFilter === "all" || order.order_status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-secondary">
+      <div className="min-h-screen flex w-full bg-background gradient-mesh">
         <DashboardSidebar />
         <SidebarInset className="flex-1">
           {/* Header */}
-          <header className="sticky top-0 z-40 bg-primary text-primary-foreground p-4">
+          <header className="sticky top-0 z-40 glass-card rounded-none border-x-0 border-t-0 p-4">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="md:hidden">
                 <Menu className="h-6 w-6" />
               </SidebarTrigger>
               <div>
-                <h1 className="text-lg font-semibold">NAME: {user.email?.split("@")[0]}</h1>
-                <p className="text-sm text-primary-foreground/70">ROLE: CUSTOMER</p>
+                <h1 className="text-lg font-semibold">{user.email?.split("@")[0]}</h1>
+                <p className="text-sm text-muted-foreground">Order History</p>
               </div>
             </div>
           </header>
 
           {/* Content */}
           <main className="p-4 md:p-6">
-            <div className="bg-background rounded-lg shadow-sm p-6">
+            <div className="glass-card p-6 animate-fade-in">
               {/* Filters */}
               <div className="flex flex-wrap gap-4 mb-6">
-                <Select>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by Payment Method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Methods</SelectItem>
-                    <SelectItem value="wallet">Wallet</SelectItem>
-                    <SelectItem value="momo">Mobile Money</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by Order Status" />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-48 glass-card border-border/50">
+                    <SelectValue placeholder="Filter by Status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="failed">Failed</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <Select>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by Payment Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="paid">Paid</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button variant="secondary" className="bg-orange-500 hover:bg-orange-600 text-white">
-                  Bulk Actions
-                </Button>
-              </div>
-
-              {/* Search */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Show</span>
-                  <Select defaultValue="50">
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                      <SelectItem value="100">100</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-sm text-muted-foreground">entries</span>
-                </div>
-                <div className="relative">
+                <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search..."
+                    placeholder="Search orders..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
+                    className="pl-10 glass-card border-border/50"
                   />
                 </div>
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-border/50">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-primary/10">
-                      <TableHead className="font-semibold">ORDER CODE</TableHead>
-                      <TableHead className="font-semibold">PACKAGE</TableHead>
-                      <TableHead className="font-semibold">PRICE</TableHead>
-                      <TableHead className="font-semibold">BENEFICIARY NO</TableHead>
-                      <TableHead className="font-semibold">VOLUME</TableHead>
-                      <TableHead className="font-semibold">ORDER DATE</TableHead>
-                      <TableHead className="font-semibold">ORDER STATUS</TableHead>
-                      <TableHead className="font-semibold">PAYMENT METHOD</TableHead>
-                      <TableHead className="font-semibold">PAYMENT STATUS</TableHead>
+                    <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                      <TableHead className="font-semibold">Order</TableHead>
+                      <TableHead className="font-semibold">Package</TableHead>
+                      <TableHead className="font-semibold">Network</TableHead>
+                      <TableHead className="font-semibold">Price</TableHead>
+                      <TableHead className="font-semibold">Phone</TableHead>
+                      <TableHead className="font-semibold">Date</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredOrders.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                          No data available in table
+                        <TableCell colSpan={8} className="text-center py-12">
+                          <div className="flex flex-col items-center gap-2">
+                            <ShoppingCart className="h-10 w-10 text-muted-foreground/50" />
+                            <p className="text-muted-foreground">No orders found</p>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredOrders.map((order) => (
-                        <TableRow key={order.id}>
+                      filteredOrders.map((order, index) => (
+                        <TableRow 
+                          key={order.id} 
+                          className="animate-fade-in hover:bg-secondary/30"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
                           <TableCell className="font-mono text-xs">
-                            {order.id.slice(0, 8).toUpperCase()}
+                            #{order.id.slice(0, 8).toUpperCase()}
                           </TableCell>
-                          <TableCell>{order.package_name}</TableCell>
-                          <TableCell>₵{order.price.toFixed(2)}</TableCell>
-                          <TableCell>{order.recipient_phone}</TableCell>
-                          <TableCell>{order.data_amount}</TableCell>
                           <TableCell>
-                            {format(new Date(order.created_at), "yyyy-MM-dd")}
+                            <div>
+                              <p className="font-medium">{order.package_name}</p>
+                              <p className="text-xs text-muted-foreground">{order.data_amount}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <NetworkBadge phone={order.recipient_phone} />
+                          </TableCell>
+                          <TableCell className="font-mono-numbers font-semibold">
+                            ₵{order.price.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {order.recipient_phone}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {format(new Date(order.created_at), "MMM d, yyyy")}
                           </TableCell>
                           <TableCell>
                             <span
-                              className={`px-2 py-1 rounded text-xs ${
+                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                 order.order_status === "completed"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-green-500/20 text-green-600"
                                   : order.order_status === "failed"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-red-500/20 text-red-600"
+                                  : order.order_status === "processing"
+                                  ? "bg-blue-500/20 text-blue-600"
+                                  : "bg-yellow-500/20 text-yellow-600"
                               }`}
                             >
                               {order.order_status}
                             </span>
                           </TableCell>
-                          <TableCell>{order.payment_method || "-"}</TableCell>
                           <TableCell>
-                            <span
-                              className={`px-2 py-1 rounded text-xs ${
-                                order.payment_status === "paid"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {order.payment_status}
-                            </span>
+                            {order.order_status === "completed" && order.bundle_id && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleBuyAgain(order)}
+                                disabled={buyAgainLoading === order.id}
+                                className="hover-lift text-xs"
+                              >
+                                {buyAgainLoading === order.id ? (
+                                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <ShoppingCart className="h-3 w-3 mr-1" />
+                                )}
+                                Buy Again
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -238,19 +266,9 @@ const DashboardOrders = () => {
                 </Table>
               </div>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing 0 to 0 of {filteredOrders.length} entries
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" disabled>
-                    Next
-                  </Button>
-                </div>
+              {/* Pagination info */}
+              <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
+                <p>Showing {filteredOrders.length} of {orders.length} orders</p>
               </div>
             </div>
           </main>
