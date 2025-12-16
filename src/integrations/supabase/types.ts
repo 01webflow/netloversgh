@@ -14,6 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_payouts: {
+        Row: {
+          agent_id: string
+          amount: number
+          created_at: string | null
+          id: string
+          payment_method: string
+          payment_reference: string | null
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_method: string
+          payment_reference?: string | null
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          payment_reference?: string | null
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_payouts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_sales: {
+        Row: {
+          agent_id: string
+          commission_amount: number
+          created_at: string | null
+          id: string
+          order_id: string
+          sale_amount: number
+          status: string
+        }
+        Insert: {
+          agent_id: string
+          commission_amount: number
+          created_at?: string | null
+          id?: string
+          order_id: string
+          sale_amount: number
+          status?: string
+        }
+        Update: {
+          agent_id?: string
+          commission_amount?: number
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          sale_amount?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_sales_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agents: {
+        Row: {
+          business_name: string
+          commission_rate: number
+          created_at: string | null
+          id: string
+          pending_payout: number
+          phone: string
+          status: Database["public"]["Enums"]["agent_status"]
+          total_commission: number
+          total_sales: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          business_name: string
+          commission_rate?: number
+          created_at?: string | null
+          id?: string
+          pending_payout?: number
+          phone: string
+          status?: Database["public"]["Enums"]["agent_status"]
+          total_commission?: number
+          total_sales?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          business_name?: string
+          commission_rate?: number
+          created_at?: string | null
+          id?: string
+          pending_payout?: number
+          phone?: string
+          status?: Database["public"]["Enums"]["agent_status"]
+          total_commission?: number
+          total_sales?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -261,7 +389,8 @@ export type Database = {
       validate_ghana_phone: { Args: { phone: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      agent_status: "pending" | "approved" | "suspended"
+      app_role: "admin" | "moderator" | "user" | "agent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -389,7 +518,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      agent_status: ["pending", "approved", "suspended"],
+      app_role: ["admin", "moderator", "user", "agent"],
     },
   },
 } as const
