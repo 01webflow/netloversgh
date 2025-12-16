@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -30,40 +31,42 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/orders" element={<DashboardOrders />} />
-              <Route path="/dashboard/orders/:provider" element={<DashboardOrders />} />
-              <Route path="/dashboard/wallet" element={<DashboardWallet />} />
-              <Route path="/dashboard/account" element={<DashboardAccount />} />
-              <Route path="/dashboard/transactions" element={<DashboardWallet />} />
-              <Route path="/bundles" element={<Bundles />} />
-              <Route path="/bundles/:providerId" element={<BundleDetail />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
-    </AuthProvider>
+    <ThemeProvider defaultTheme="system" storageKey="netlovers-theme">
+      <AuthProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/orders" element={<DashboardOrders />} />
+                <Route path="/dashboard/orders/:provider" element={<DashboardOrders />} />
+                <Route path="/dashboard/wallet" element={<DashboardWallet />} />
+                <Route path="/dashboard/account" element={<DashboardAccount />} />
+                <Route path="/dashboard/transactions" element={<DashboardWallet />} />
+                <Route path="/bundles" element={<Bundles />} />
+                <Route path="/bundles/:providerId" element={<BundleDetail />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
