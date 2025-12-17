@@ -7,13 +7,15 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Menu, User, Mail, Phone, Save } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Menu, User, Mail, Phone, Save, Bell, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Profile {
   full_name: string | null;
   phone: string | null;
   wallet_balance: number;
+  notification_preference: string | null;
 }
 
 const DashboardAccount = () => {
@@ -24,6 +26,7 @@ const DashboardAccount = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
+    notificationPreference: "email",
   });
   const [saving, setSaving] = useState(false);
 
@@ -38,7 +41,7 @@ const DashboardAccount = () => {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("full_name, phone, wallet_balance")
+          .select("full_name, phone, wallet_balance, notification_preference")
           .eq("user_id", user.id)
           .maybeSingle();
         if (data) {
@@ -46,6 +49,7 @@ const DashboardAccount = () => {
           setFormData({
             fullName: data.full_name || "",
             phone: data.phone || "",
+            notificationPreference: data.notification_preference || "email",
           });
         }
       }
@@ -62,6 +66,7 @@ const DashboardAccount = () => {
       .update({
         full_name: formData.fullName,
         phone: formData.phone,
+        notification_preference: formData.notificationPreference,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
@@ -167,13 +172,80 @@ const DashboardAccount = () => {
                     />
                   </div>
                 </div>
-
-                <Button onClick={handleSave} disabled={saving} className="mt-4">
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
               </div>
             </div>
+
+            {/* Notification Preferences Card */}
+            <div className="bg-card rounded-2xl p-6 border border-border mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Bell className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold text-foreground">Notification Preferences</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose how you'd like to receive notifications about orders and wallet updates.
+              </p>
+
+              <RadioGroup
+                value={formData.notificationPreference}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, notificationPreference: value })
+                }
+                className="space-y-3"
+              >
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="email" id="email-pref" />
+                  <Label htmlFor="email-pref" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Email Only</p>
+                      <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="whatsapp" id="whatsapp-pref" />
+                  <Label htmlFor="whatsapp-pref" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <MessageSquare className="h-4 w-4 text-green-500" />
+                    <div>
+                      <p className="font-medium">WhatsApp Only</p>
+                      <p className="text-sm text-muted-foreground">Receive notifications via WhatsApp</p>
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="both" id="both-pref" />
+                  <Label htmlFor="both-pref" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <div className="flex -space-x-1">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <MessageSquare className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Both Email & WhatsApp</p>
+                      <p className="text-sm text-muted-foreground">Receive notifications on both channels</p>
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="none" id="none-pref" />
+                  <Label htmlFor="none-pref" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Bell className="h-4 w-4 text-muted-foreground line-through" />
+                    <div>
+                      <p className="font-medium">No Notifications</p>
+                      <p className="text-sm text-muted-foreground">Disable all external notifications</p>
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Save Button */}
+            <Button onClick={handleSave} disabled={saving} className="w-full mb-6">
+              <Save className="h-4 w-4 mr-2" />
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
 
             {/* Account Stats */}
             <div className="grid grid-cols-2 gap-4">

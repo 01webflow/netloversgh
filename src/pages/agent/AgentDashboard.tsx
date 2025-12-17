@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, Wallet, Clock, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { DollarSign, TrendingUp, Wallet, Clock, ArrowRight, Copy, Link, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface AgentData {
@@ -15,6 +16,7 @@ interface AgentData {
   total_commission: number;
   pending_payout: number;
   status: string;
+  referral_code: string | null;
 }
 
 interface Sale {
@@ -31,6 +33,10 @@ const AgentDashboard = () => {
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const referralLink = agent?.referral_code
+    ? `${window.location.origin}/bundles?ref=${agent.referral_code}`
+    : "";
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -88,6 +94,36 @@ const AgentDashboard = () => {
     toast.success("Payout request submitted!");
   };
 
+  const copyReferralCode = () => {
+    if (agent?.referral_code) {
+      navigator.clipboard.writeText(agent.referral_code);
+      toast.success("Referral code copied!");
+    }
+  };
+
+  const copyReferralLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      toast.success("Referral link copied!");
+    }
+  };
+
+  const shareReferralLink = async () => {
+    if (referralLink && navigator.share) {
+      try {
+        await navigator.share({
+          title: "NetLoversGH Data Bundles",
+          text: "Get amazing data bundle deals! Use my referral link:",
+          url: referralLink,
+        });
+      } catch (err) {
+        copyReferralLink();
+      }
+    } else {
+      copyReferralLink();
+    }
+  };
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -134,6 +170,54 @@ const AgentDashboard = () => {
           <h1 className="text-3xl font-bold">Agent Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {agent?.business_name}</p>
         </div>
+
+        {/* Referral Section */}
+        <Card className="glass-card mb-8 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Link className="h-5 w-5 text-primary" />
+              Your Referral Link
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <label className="text-sm text-muted-foreground mb-1 block">Referral Code</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={agent?.referral_code || ""}
+                    readOnly
+                    className="font-mono text-lg bg-muted"
+                  />
+                  <Button variant="outline" size="icon" onClick={copyReferralCode}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm text-muted-foreground mb-1 block">Referral Link</label>
+              <div className="flex gap-2">
+                <Input
+                  value={referralLink}
+                  readOnly
+                  className="font-mono text-sm bg-muted"
+                />
+                <Button variant="outline" size="icon" onClick={copyReferralLink}>
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button variant="default" size="icon" onClick={shareReferralLink}>
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Share this link with customers. You'll earn <strong>{agent?.commission_rate}%</strong> commission on all orders placed through your link!
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -210,7 +294,7 @@ const AgentDashboard = () => {
           <CardContent>
             {sales.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
-                No sales yet. Start selling to earn commissions!
+                No sales yet. Share your referral link to start earning commissions!
               </p>
             ) : (
               <div className="space-y-4">

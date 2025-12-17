@@ -108,6 +108,7 @@ export type Database = {
           id: string
           pending_payout: number
           phone: string
+          referral_code: string | null
           status: Database["public"]["Enums"]["agent_status"]
           total_commission: number
           total_sales: number
@@ -121,6 +122,7 @@ export type Database = {
           id?: string
           pending_payout?: number
           phone: string
+          referral_code?: string | null
           status?: Database["public"]["Enums"]["agent_status"]
           total_commission?: number
           total_sales?: number
@@ -134,6 +136,7 @@ export type Database = {
           id?: string
           pending_payout?: number
           phone?: string
+          referral_code?: string | null
           status?: Database["public"]["Enums"]["agent_status"]
           total_commission?: number
           total_sales?: number
@@ -252,6 +255,7 @@ export type Database = {
           payment_status: string | null
           price: number
           recipient_phone: string
+          referred_by_agent_id: string | null
           user_id: string
         }
         Insert: {
@@ -265,6 +269,7 @@ export type Database = {
           payment_status?: string | null
           price: number
           recipient_phone: string
+          referred_by_agent_id?: string | null
           user_id: string
         }
         Update: {
@@ -278,6 +283,7 @@ export type Database = {
           payment_status?: string | null
           price?: number
           recipient_phone?: string
+          referred_by_agent_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -288,6 +294,13 @@ export type Database = {
             referencedRelation: "data_bundles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_referred_by_agent_id_fkey"
+            columns: ["referred_by_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -295,6 +308,7 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          notification_preference: string | null
           phone: string | null
           updated_at: string | null
           user_id: string
@@ -304,6 +318,7 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          notification_preference?: string | null
           phone?: string | null
           updated_at?: string | null
           user_id: string
@@ -313,6 +328,7 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          notification_preference?: string | null
           phone?: string | null
           updated_at?: string | null
           user_id?: string

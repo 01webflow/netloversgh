@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Grid2X2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -50,6 +51,16 @@ const deals = [
 ];
 
 const Bundles = () => {
+  const [searchParams] = useSearchParams();
+  
+  // Capture referral code from URL and store it
+  useEffect(() => {
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      sessionStorage.setItem("agent_referral_code", refCode.toUpperCase());
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />

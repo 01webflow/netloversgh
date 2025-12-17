@@ -26,6 +26,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminAgents from "./pages/admin/AdminAgents";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import AgentApply from "./pages/agent/AgentApply";
 
@@ -62,6 +63,7 @@ const App = () => (
                 <Route path="/admin/users" element={<AdminUsers />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
                 <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+                <Route path="/admin/agents" element={<AdminAgents />} />
                 <Route path="/agent/dashboard" element={<AgentDashboard />} />
                 <Route path="/agent/apply" element={<AgentApply />} />
                 <Route path="*" element={<NotFound />} />
