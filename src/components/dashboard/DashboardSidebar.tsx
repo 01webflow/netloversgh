@@ -11,6 +11,7 @@ import {
   Settings,
   ChevronDown,
   Wifi,
+  Users,
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const mainMenuItems = [
   { title: "Wallet", url: "/dashboard/wallet", icon: Wallet },
   { title: "Transactions", url: "/dashboard/transactions", icon: Receipt },
   { title: "Account Details", url: "/dashboard/account", icon: User },
+  { title: "Become an Agent", url: "/agent/apply", icon: Users },
 ];
 
 const orderSubItems = [
