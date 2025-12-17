@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Wifi } from "lucide-react";
+import { Menu, X, Wifi, Users } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAgentStatus } from "@/hooks/useAgentStatus";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { isApprovedAgent } = useAgentStatus();
   
   const navLinks = [
     { name: "Home", href: "/" },
@@ -45,6 +47,16 @@ const Header = () => {
                 )}
               </Link>
             ))}
+            {/* Agent Dashboard Link for approved agents */}
+            {isApprovedAgent && (
+              <Link
+                to="/agent/dashboard"
+                className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors text-sm font-medium bg-primary/10 px-3 py-1.5 rounded-full"
+              >
+                <Users className="h-4 w-4" />
+                Agent Portal
+              </Link>
+            )}
           </nav>
 
           {/* Right side actions */}
@@ -80,6 +92,17 @@ const Header = () => {
                 {link.name}
               </Link>
             ))}
+            {/* Agent Dashboard Link for approved agents (mobile) */}
+            {isApprovedAgent && (
+              <Link
+                to="/agent/dashboard"
+                className="flex items-center gap-2 py-3 text-primary font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Users className="h-4 w-4" />
+                Agent Portal
+              </Link>
+            )}
           </nav>
         )}
       </div>
