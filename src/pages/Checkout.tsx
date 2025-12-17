@@ -111,8 +111,37 @@ const Checkout = () => {
       validatedPhone = cleanedPhone;
     }
 
-    // Create order
-    const { error } = await supabase.from("orders").insert({
+    // Check for agent referral code
+    const referralCode = sessionStorage.getItem("agent_referral_code");
+    let referredByAgentId: string | null = null;
+
+    if (referralCode) {
+      // Look up the agent by referral code
+      const { data: agentData } = await supabase
+        .from("agents")
+        .select("id")
+        .eq("referral_code", referralCode)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (agentData) {
+        referredByAgentId = agentData.id;
+      }
+    }
+
+    // Create order with referral if applicable
+    const orderData: {
+      user_id: string;
+      bundle_id: string;
+      recipient_phone: string;
+      package_name: string;
+      data_amount: string;
+      price: number;
+      payment_method: string;
+      payment_status: string;
+      order_status: string;
+      referred_by_agent_id?: string;
+    } = {
       user_id: user.id,
       bundle_id: bundle.id,
       recipient_phone: validatedPhone,
@@ -122,7 +151,13 @@ const Checkout = () => {
       payment_method: selectedPayment,
       payment_status: "pending",
       order_status: "pending",
-    });
+    };
+
+    if (referredByAgentId) {
+      orderData.referred_by_agent_id = referredByAgentId;
+    }
+
+    const { error } = await supabase.from("orders").insert(orderData);
 
     if (error) {
       toast({
@@ -132,6 +167,9 @@ const Checkout = () => {
       });
       return;
     }
+
+    // Clear the referral code after successful order
+    sessionStorage.removeItem("agent_referral_code");
 
     toast({
       title: "Order Placed!",

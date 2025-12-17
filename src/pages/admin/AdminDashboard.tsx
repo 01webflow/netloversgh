@@ -133,7 +133,7 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/users")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -155,6 +155,18 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">View and update order statuses</p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/agents")}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Manage Agents
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">Approve agents and view performance</p>
             </CardContent>
           </Card>
 
