@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
@@ -7,8 +7,9 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import WalletCard from "@/components/dashboard/WalletCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Menu, Plus, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Menu, Plus, ArrowUpRight, ArrowDownLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePaystack } from "@/hooks/usePaystack";
 
 interface Profile {
   wallet_balance: number;
@@ -25,7 +26,9 @@ interface Transaction {
 const DashboardWallet = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { initializePayment, verifyPayment, loading: paystackLoading } = usePaystack();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showFundModal, setShowFundModal] = useState(false);
@@ -37,29 +40,45 @@ const DashboardWallet = () => {
     }
   }, [user, loading, navigate]);
 
+  // Handle Paystack callback
   useEffect(() => {
-    const fetchData = async () => {
-      if (user) {
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("wallet_balance")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (profileData) {
-          setProfile(profileData);
+    const reference = searchParams.get("reference");
+    if (reference && user) {
+      verifyPayment(reference).then((success) => {
+        if (success) {
+          // Refresh data
+          fetchData();
         }
+        // Clear the URL params
+        navigate("/dashboard/wallet", { replace: true });
+      });
+    }
+  }, [searchParams, user]);
 
-        const { data: txData } = await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10);
-        if (txData) {
-          setTransactions(txData);
-        }
+  const fetchData = async () => {
+    if (user) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("wallet_balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (profileData) {
+        setProfile(profileData);
       }
-    };
+
+      const { data: txData } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (txData) {
+        setTransactions(txData);
+      }
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [user]);
 
@@ -73,10 +92,22 @@ const DashboardWallet = () => {
       return;
     }
 
-    toast({
-      title: "Coming Soon",
-      description: "Wallet funding will be available once payment integration is complete",
+    if (!user?.email) {
+      toast({
+        title: "Error",
+        description: "Please update your email to proceed",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await initializePayment({
+      amount: parseFloat(fundAmount),
+      email: user.email,
+      userId: user.id,
+      type: "wallet_topup",
     });
+
     setShowFundModal(false);
     setFundAmount("");
   };
@@ -212,8 +243,8 @@ const DashboardWallet = () => {
                   >
                     Cancel
                   </Button>
-                  <Button className="flex-1" onClick={handleFundWallet}>
-                    Proceed
+                  <Button className="flex-1" onClick={handleFundWallet} disabled={paystackLoading}>
+                    {paystackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Proceed"}
                   </Button>
                 </div>
               </div>

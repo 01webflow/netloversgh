@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, QrCode } from "lucide-react";
+import { ArrowLeft, QrCode, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { validateGhanaPhone, sanitizePhone } from "@/lib/validation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { usePaystack } from "@/hooks/usePaystack";
 
 interface Profile {
   wallet_balance: number;
@@ -18,12 +19,12 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { initializePayment, loading: paystackLoading } = usePaystack();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
 
   const { bundle, recipientPhone } = location.state || {};
-
-  useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
         const { data } = await supabase
