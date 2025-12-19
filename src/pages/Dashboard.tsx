@@ -13,6 +13,7 @@ import { LiveOrderTracker } from "@/components/dashboard/widgets/LiveOrderTracke
 import { Bell, Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useOrderStatusNotifications } from "@/hooks/useOrderStatusNotifications";
 
 interface Profile {
   full_name: string | null;
@@ -44,6 +45,9 @@ const Dashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [monthlySpending, setMonthlySpending] = useState({ current: 0, previous: 0 });
   const [quickBuyLoading, setQuickBuyLoading] = useState(false);
+
+  // Enable real-time order status notifications
+  useOrderStatusNotifications(user?.id);
 
   useEffect(() => {
     if (!loading && !user) {

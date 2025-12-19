@@ -5,8 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, TrendingUp, Wallet, Clock, ArrowRight, Copy, Link, Share2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DollarSign, TrendingUp, Wallet, Clock, ArrowRight, Copy, Link, Share2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import AgentAnalyticsCharts from "@/components/agent/AgentAnalyticsCharts";
 
 interface AgentData {
   id: string;
@@ -60,12 +62,12 @@ const AgentDashboard = () => {
 
       setAgent(agentData as AgentData);
 
+      // Fetch all sales for analytics (not just last 10)
       const { data: salesData } = await supabase
         .from("agent_sales")
         .select("*")
         .eq("agent_id", agentData.id)
-        .order("created_at", { ascending: false })
-        .limit(10);
+        .order("created_at", { ascending: false });
 
       setSales((salesData as Sale[]) || []);
       setLoading(false);
@@ -219,110 +221,133 @@ const AgentDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Sales
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-mono-numbers">
-                GHS {agent?.total_sales?.toFixed(2) || "0.00"}
-              </div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Commission Rate
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-mono-numbers">
-                {agent?.commission_rate || 5}%
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Earned
-              </CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600 font-mono-numbers">
-                GHS {agent?.total_commission?.toFixed(2) || "0.00"}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Pending Payout
-              </CardTitle>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary font-mono-numbers">
-                GHS {agent?.pending_payout?.toFixed(2) || "0.00"}
-              </div>
-              <Button
-                size="sm"
-                className="mt-2 w-full"
-                onClick={requestPayout}
-                disabled={!agent || agent.pending_payout < 10}
-              >
-                Request Payout
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Sales */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {sales.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                No sales yet. Share your referral link to start earning commissions!
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {sales.map((sale) => (
-                  <div
-                    key={sale.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
-                  >
-                    <div>
-                      <p className="font-medium">Sale: GHS {sale.sale_amount.toFixed(2)}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(sale.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600">
-                        +GHS {sale.commission_amount.toFixed(2)}
-                      </p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
-                        {sale.status}
-                      </span>
-                    </div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Total Sales
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono-numbers">
+                    GHS {agent?.total_sales?.toFixed(2) || "0.00"}
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Commission Rate
+                  </CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono-numbers">
+                    {agent?.commission_rate || 5}%
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Total Earned
+                  </CardTitle>
+                  <Wallet className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600 font-mono-numbers">
+                    GHS {agent?.total_commission?.toFixed(2) || "0.00"}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Pending Payout
+                  </CardTitle>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary font-mono-numbers">
+                    GHS {agent?.pending_payout?.toFixed(2) || "0.00"}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="mt-2 w-full"
+                    onClick={requestPayout}
+                    disabled={!agent || agent.pending_payout < 10}
+                  >
+                    Request Payout
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Sales */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Recent Sales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {sales.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">
+                    No sales yet. Share your referral link to start earning commissions!
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {sales.slice(0, 10).map((sale) => (
+                      <div
+                        key={sale.id}
+                        className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
+                      >
+                        <div>
+                          <p className="font-medium">Sale: GHS {sale.sale_amount.toFixed(2)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(sale.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-green-600">
+                            +GHS {sale.commission_amount.toFixed(2)}
+                          </p>
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                            {sale.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <AgentAnalyticsCharts 
+              sales={sales}
+              totalReferrals={sales.length}
+              convertedReferrals={sales.filter(s => s.status === 'completed').length}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
