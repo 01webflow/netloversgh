@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePushNotifications } from "./usePushNotifications";
 
 interface OrderStatusPayload {
   new: {
@@ -17,6 +18,8 @@ interface OrderStatusPayload {
 }
 
 export const useOrderStatusNotifications = (userId: string | undefined) => {
+  const { isEnabled, notifyOrderStatus } = usePushNotifications();
+
   useEffect(() => {
     if (!userId) return;
 
@@ -62,6 +65,11 @@ export const useOrderStatusNotifications = (userId: string | undefined) => {
             } else {
               toast.success(message.title, { description: message.description });
             }
+
+            // Send browser push notification
+            if (isEnabled) {
+              notifyOrderStatus(newOrder.order_status, newOrder.package_name);
+            }
           }
 
           // Also send notification through the notification service if completed or failed
@@ -103,5 +111,5 @@ export const useOrderStatusNotifications = (userId: string | undefined) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, isEnabled, notifyOrderStatus]);
 };
