@@ -8,8 +8,9 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: "agent_approved" | "agent_rejected" | "order_completed" | "order_failed" | "order_processing";
-  to: string;
+  type: "agent_approved" | "agent_rejected" | "order_completed" | "order_failed" | "order_processing" | "refund_processed";
+  to?: string;
+  user_id?: string;
   data: {
     name?: string;
     businessName?: string;
@@ -21,6 +22,11 @@ interface EmailRequest {
       price: number;
     };
     reason?: string;
+    package_name?: string;
+    data_amount?: string;
+    price?: number;
+    recipient_phone?: string;
+    refund_amount?: number;
   };
 }
 
@@ -175,6 +181,36 @@ const getEmailContent = (type: string, data: EmailRequest["data"]) => {
         `,
       };
 
+    case "refund_processed":
+      return {
+        subject: "💸 Refund Processed - NetLoversGH",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); padding: 30px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Refund Processed 💸</h1>
+            </div>
+            <div style="padding: 30px; background: #f9fafb;">
+              <h2 style="color: #1f2937;">Your refund has been processed</h2>
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                We've processed a refund for your failed order. The amount has been credited to your wallet.
+              </p>
+              <div style="background: white; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #e5e7eb;">
+                <h3 style="color: #8b5cf6; margin-top: 0;">Refund Details</h3>
+                <p style="margin: 8px 0;"><strong>Package:</strong> ${data.package_name || data.orderDetails?.packageName || "N/A"}</p>
+                <p style="margin: 8px 0;"><strong>Data:</strong> ${data.data_amount || data.orderDetails?.dataAmount || "N/A"}</p>
+                <p style="margin: 8px 0;"><strong>Refund Amount:</strong> GHS ${(data.refund_amount || data.price || data.orderDetails?.price || 0).toFixed(2)}</p>
+              </div>
+              <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                You can use your wallet balance to purchase another data bundle. We apologize for any inconvenience.
+              </p>
+            </div>
+            <div style="padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+              <p>NetLovers - Your Trusted Data Bundle Provider</p>
+            </div>
+          </div>
+        `,
+      };
+
     default:
       return {
         subject: "NetLovers Notification",
@@ -189,8 +225,39 @@ serve(async (req) => {
   }
 
   try {
-    const { type, to, data } = await req.json() as EmailRequest;
-    console.log("Sending email:", { type, to });
+    const requestBody = await req.json() as EmailRequest;
+    const { type, to, user_id, data } = requestBody;
+    
+    // Support both direct email and user_id lookup
+    let recipientEmail = to;
+    
+    if (!recipientEmail && user_id) {
+      // Look up user email from Supabase
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      
+      const userResponse = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user_id}`, {
+        headers: {
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+          "apikey": supabaseServiceKey,
+        },
+      });
+      
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        recipientEmail = userData.email;
+      }
+    }
+    
+    if (!recipientEmail) {
+      console.error("No recipient email found");
+      return new Response(JSON.stringify({ error: "No recipient email" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    console.log("Sending email:", { type, to: recipientEmail });
 
     const { subject, html } = getEmailContent(type, data);
 
@@ -202,7 +269,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "NetLovers <onboarding@resend.dev>",
-        to: [to],
+        to: [recipientEmail],
         subject,
         html,
       }),

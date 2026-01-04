@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminBundles from "./pages/admin/AdminBundles";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminAgents from "./pages/admin/AdminAgents";
 import AdminPayouts from "./pages/admin/AdminPayouts";
@@ -63,6 +64,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/bundles" element={<AdminBundles />} />
                 <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
                 <Route path="/admin/agents" element={<AdminAgents />} />
                 <Route path="/admin/payouts" element={<AdminPayouts />} />

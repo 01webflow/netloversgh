@@ -88,13 +88,105 @@ const Checkout = () => {
       }
     }
 
-    // MoMo payments require Paystack integration (to be implemented)
+    // MoMo payments via Paystack
     if (selectedPayment === "momo") {
-      toast({
-        title: "Coming Soon",
-        description: "Mobile Money payments will be available soon. Please use wallet for now.",
-        variant: "destructive",
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email;
+      
+      if (!email) {
+        toast({
+          title: "Email Required",
+          description: "Please update your profile with an email address to use Mobile Money",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProcessing(true);
+      
+      // Validate phone before proceeding
+      let validatedMomoPhone = recipientPhone;
+      if (recipientPhone !== "My Number") {
+        const cleanedPhone = sanitizePhone(recipientPhone);
+        if (!validateGhanaPhone(cleanedPhone)) {
+          toast({
+            title: "Invalid Phone Number",
+            description: "Please enter a valid 10-digit Ghana phone number starting with 0",
+            variant: "destructive",
+          });
+          navigate(-1);
+          setProcessing(false);
+          return;
+        }
+        validatedMomoPhone = cleanedPhone;
+      }
+
+      // Check for agent referral
+      const referralCode = sessionStorage.getItem("agent_referral_code");
+      let momoReferredAgentId: string | null = null;
+      if (referralCode) {
+        const { data: agentData } = await supabase
+          .from("agents")
+          .select("id")
+          .eq("referral_code", referralCode)
+          .eq("status", "approved")
+          .maybeSingle();
+        if (agentData) momoReferredAgentId = agentData.id;
+      }
+
+      // Create order first with pending payment
+      const momoOrderData: {
+        user_id: string;
+        bundle_id: string;
+        recipient_phone: string;
+        package_name: string;
+        data_amount: string;
+        price: number;
+        payment_method: string;
+        payment_status: string;
+        order_status: string;
+        referred_by_agent_id?: string;
+      } = {
+        user_id: user.id,
+        bundle_id: bundle.id,
+        recipient_phone: validatedMomoPhone,
+        package_name: bundle.name,
+        data_amount: bundle.data_amount,
+        price: bundle.price,
+        payment_method: "momo",
+        payment_status: "pending",
+        order_status: "pending",
+      };
+
+      if (momoReferredAgentId) momoOrderData.referred_by_agent_id = momoReferredAgentId;
+
+      const { data: orderResult, error: orderError } = await supabase
+        .from("orders")
+        .insert(momoOrderData)
+        .select()
+        .single();
+
+      if (orderError) {
+        toast({
+          title: "Error",
+          description: "Failed to create order. Please try again.",
+          variant: "destructive",
+        });
+        setProcessing(false);
+        return;
+      }
+
+      // Initialize Paystack payment
+      await initializePayment({
+        amount: bundle.price,
+        email,
+        userId: user.id,
+        type: "order_payment",
+        orderId: orderResult.id,
       });
+
+      sessionStorage.removeItem("agent_referral_code");
+      setProcessing(false);
       return;
     }
 
@@ -275,9 +367,16 @@ const Checkout = () => {
             onClick={handleConfirmOrder}
             className="w-full mt-6"
             size="lg"
-            disabled={!selectedPayment}
+            disabled={!selectedPayment || processing || paystackLoading}
           >
-            Confirm Order
+            {processing || paystackLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Confirm Order"
+            )}
           </Button>
         </div>
       </main>

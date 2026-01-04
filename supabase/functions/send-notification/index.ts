@@ -17,7 +17,7 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: "order_confirmation" | "low_wallet_balance" | "order_status_update";
+  type: "order_confirmation" | "low_wallet_balance" | "order_status_update" | "refund_processed" | "agent_approved" | "agent_rejected";
   user_id: string;
   data: Record<string, unknown>;
   channel?: "email" | "whatsapp" | "both";
@@ -110,6 +110,33 @@ Top up your wallet to continue enjoying instant data purchases!`;
 📦 *Package:* ${data.package_name || "N/A"}
 📱 *Recipient:* ${data.recipient_phone || "N/A"}
 📋 *Status:* ${status.toUpperCase()}`;
+
+    case "refund_processed":
+      return `💸 *Refund Processed - NetLoversGH*
+
+Your refund has been processed successfully!
+
+📦 *Package:* ${data.package_name || "N/A"}
+💰 *Refund Amount:* GHS ${data.refund_amount || "0.00"}
+
+The amount has been credited to your wallet. Thank you for your patience!`;
+
+    case "agent_approved":
+      return `🎉 *Welcome Agent - NetLoversGH*
+
+Congratulations! Your agent application has been approved!
+
+🏪 *Business:* ${data.business_name || "N/A"}
+📱 *Referral Code:* ${data.referral_code || "N/A"}
+
+You can now start earning commissions on sales. Visit your dashboard to get started!`;
+
+    case "agent_rejected":
+      return `😔 *Application Update - NetLoversGH*
+
+We're sorry, but your agent application was not approved at this time.
+
+Please contact support if you have questions or would like to reapply.`;
 
     default:
       return "Notification from NetLoversGH";
