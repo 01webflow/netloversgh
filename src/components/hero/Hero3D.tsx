@@ -1,5 +1,5 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Float, MeshDistortMaterial, Sparkles } from '@react-three/drei';
+import { Canvas, extend } from '@react-three/fiber';
+import { OrbitControls, Float, MeshDistortMaterial, Sparkles, Line } from '@react-three/drei';
 import { Suspense, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
@@ -75,16 +75,16 @@ function NetworkNodes() {
           
           const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
           const points = curve.getPoints(20);
-          const geometry = new THREE.BufferGeometry().setFromPoints(points);
           
           return (
-            <line key={i} geometry={geometry}>
-              <lineBasicMaterial
-                color={i % 2 === 0 ? "#7c3aed" : "#06b6d4"}
-                transparent
-                opacity={0.4}
-              />
-            </line>
+            <Line
+              key={i}
+              points={points}
+              color={i % 2 === 0 ? "#7c3aed" : "#06b6d4"}
+              transparent
+              opacity={0.4}
+              lineWidth={1}
+            />
           );
         })}
       </group>

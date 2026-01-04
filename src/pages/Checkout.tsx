@@ -25,6 +25,8 @@ const Checkout = () => {
   const [processing, setProcessing] = useState(false);
 
   const { bundle, recipientPhone } = location.state || {};
+
+  useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
         const { data } = await supabase
