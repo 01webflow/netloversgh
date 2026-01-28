@@ -105,6 +105,88 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user]);
 
+  // Real-time subscription for orders
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('dashboard-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Real-time order update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setOrders((prev) => [payload.new as Order, ...prev].slice(0, 10));
+            toast({
+              title: "New Order Created",
+              description: `Order for ${(payload.new as Order).package_name} has been placed`,
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            setOrders((prev) =>
+              prev.map((order) =>
+                order.id === (payload.new as Order).id ? (payload.new as Order) : order
+              )
+            );
+            const newOrder = payload.new as Order;
+            if (newOrder.order_status === 'completed') {
+              toast({
+                title: "Order Completed! 🎉",
+                description: `Your ${newOrder.package_name} order has been delivered`,
+              });
+            } else if (newOrder.order_status === 'failed') {
+              toast({
+                title: "Order Failed",
+                description: `Your ${newOrder.package_name} order could not be processed`,
+                variant: "destructive",
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
+
+  // Real-time subscription for wallet balance
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('dashboard-wallet')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Real-time wallet update:', payload);
+          const newProfile = payload.new as Profile & { user_id: string };
+          setProfile({
+            full_name: newProfile.full_name,
+            wallet_balance: newProfile.wallet_balance,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const handleQuickBuy = async () => {
     const lastOrder = orders.find(o => o.order_status === 'completed');
     if (!lastOrder || !lastOrder.bundle_id) {
