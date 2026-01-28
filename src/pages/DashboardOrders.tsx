@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Menu, Search, RefreshCw, ShoppingCart } from "lucide-react";
+import { Menu, Search, RefreshCw, ShoppingCart, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { NetworkBadge } from "@/components/dashboard/widgets/NetworkBadge";
 import { useToast } from "@/hooks/use-toast";
@@ -242,22 +242,35 @@ const DashboardOrders = () => {
                             </span>
                           </TableCell>
                           <TableCell>
-                            {order.order_status === "completed" && order.bundle_id && (
+                            <div className="flex items-center gap-2">
                               <Button
                                 size="sm"
-                                variant="outline"
-                                onClick={() => handleBuyAgain(order)}
-                                disabled={buyAgainLoading === order.id}
+                                variant="ghost"
+                                asChild
                                 className="hover-lift text-xs"
                               >
-                                {buyAgainLoading === order.id ? (
-                                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                                ) : (
-                                  <ShoppingCart className="h-3 w-3 mr-1" />
-                                )}
-                                Buy Again
+                                <Link to={`/dashboard/order/${order.id}`}>
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Track
+                                </Link>
                               </Button>
-                            )}
+                              {order.order_status === "completed" && order.bundle_id && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleBuyAgain(order)}
+                                  disabled={buyAgainLoading === order.id}
+                                  className="hover-lift text-xs"
+                                >
+                                  {buyAgainLoading === order.id ? (
+                                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                  ) : (
+                                    <ShoppingCart className="h-3 w-3 mr-1" />
+                                  )}
+                                  Buy Again
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
