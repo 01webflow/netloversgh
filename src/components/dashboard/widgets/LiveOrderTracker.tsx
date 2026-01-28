@@ -1,4 +1,5 @@
-import { Package, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Package, Clock, CheckCircle, XCircle, Loader2, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 interface Order {
@@ -30,21 +31,27 @@ export function LiveOrderTracker({ recentOrders }: LiveOrderTrackerProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500/10 border-green-500/20';
+        return 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20';
       case 'failed':
-        return 'bg-red-500/10 border-red-500/20';
+        return 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20';
       case 'processing':
-        return 'bg-blue-500/10 border-blue-500/20';
+        return 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20';
       default:
-        return 'bg-yellow-500/10 border-yellow-500/20';
+        return 'bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20';
     }
   };
 
   return (
     <div className="glass-card p-5 hover-lift">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-muted-foreground">Order Status</h3>
-        <Package className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-medium text-muted-foreground">Live Order Status</h3>
+        <div className="flex items-center gap-1">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <Package className="h-4 w-4 text-primary ml-1" />
+        </div>
       </div>
       
       {recentOrders.length === 0 ? (
@@ -55,9 +62,10 @@ export function LiveOrderTracker({ recentOrders }: LiveOrderTrackerProps) {
       ) : (
         <div className="space-y-3">
           {recentOrders.slice(0, 3).map((order, index) => (
-            <div 
-              key={order.id} 
-              className={`flex items-center gap-3 p-3 rounded-xl border ${getStatusColor(order.order_status)} animate-fade-in`}
+            <Link 
+              key={order.id}
+              to={`/dashboard/order/${order.id}`}
+              className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${getStatusColor(order.order_status)} animate-fade-in group`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {getStatusIcon(order.order_status)}
@@ -67,16 +75,28 @@ export function LiveOrderTracker({ recentOrders }: LiveOrderTrackerProps) {
                   {format(new Date(order.created_at), 'MMM d, HH:mm')}
                 </p>
               </div>
-              <span className={`text-xs font-medium capitalize px-2 py-1 rounded-full ${
-                order.order_status === 'completed' ? 'bg-green-500 text-white' :
-                order.order_status === 'failed' ? 'bg-red-500 text-white' :
-                order.order_status === 'processing' ? 'bg-blue-500 text-white' :
-                'bg-yellow-500 text-yellow-900'
-              }`}>
-                {order.order_status}
-              </span>
-            </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium capitalize px-2 py-1 rounded-full ${
+                  order.order_status === 'completed' ? 'bg-green-500 text-white' :
+                  order.order_status === 'failed' ? 'bg-red-500 text-white' :
+                  order.order_status === 'processing' ? 'bg-blue-500 text-white' :
+                  'bg-yellow-500 text-yellow-900'
+                }`}>
+                  {order.order_status}
+                </span>
+                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </Link>
           ))}
+          
+          {recentOrders.length > 3 && (
+            <Link 
+              to="/dashboard/orders"
+              className="block text-center text-xs text-primary hover:underline pt-2"
+            >
+              View all {recentOrders.length} orders →
+            </Link>
+          )}
         </div>
       )}
     </div>
