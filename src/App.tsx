@@ -31,6 +31,7 @@ import AdminAgents from "./pages/admin/AdminAgents";
 import AdminPayouts from "./pages/admin/AdminPayouts";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import AgentApply from "./pages/agent/AgentApply";
+import OrderTracking from "./pages/OrderTracking";
 
 const queryClient = new QueryClient();
 
@@ -51,8 +52,9 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dashboard/orders" element={<DashboardOrders />} />
+              <Route path="/dashboard/orders" element={<DashboardOrders />} />
                 <Route path="/dashboard/orders/:provider" element={<DashboardOrders />} />
+                <Route path="/dashboard/order/:orderId" element={<OrderTracking />} />
                 <Route path="/dashboard/wallet" element={<DashboardWallet />} />
                 <Route path="/dashboard/account" element={<DashboardAccount />} />
                 <Route path="/dashboard/transactions" element={<DashboardWallet />} />

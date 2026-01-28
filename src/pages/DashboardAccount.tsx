@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Menu, User, Mail, Phone, Save, Bell, MessageSquare } from "lucide-react";
+import { Menu, User, Mail, Phone, Save, Bell, MessageSquare, BellRing } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PushNotificationToggle } from "@/components/notifications/PushNotificationToggle";
 
 interface Profile {
   full_name: string | null;
@@ -239,6 +240,18 @@ const DashboardAccount = () => {
                   </Label>
                 </div>
               </RadioGroup>
+
+              {/* Push Notifications */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <BellRing className="h-4 w-4 text-primary" />
+                  <h4 className="font-medium">Browser Push Notifications</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Get instant notifications in your browser when order status changes.
+                </p>
+                <PushNotificationToggle />
+              </div>
             </div>
 
             {/* Save Button */}
