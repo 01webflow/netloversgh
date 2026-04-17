@@ -1,18 +1,42 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Wifi, Zap, Shield, ArrowRight } from "lucide-react";
 
 // Lazy load 3D component for performance
 const Hero3D = lazy(() => import("@/components/hero/Hero3D"));
 
 const Hero = () => {
+  // Defer mounting the heavy 3D scene until the browser is idle so it
+  // doesn't block the main thread during the critical interaction window.
+  // This significantly reduces Max Potential FID / Total Blocking Time
+  // while preserving the exact visual design once mounted.
+  const [mount3D, setMount3D] = useState(false);
+
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => setMount3D(true), { timeout: 2000 });
+      return () => {
+        const cancel = (window as unknown as { cancelIdleCallback?: (id: number) => void })
+          .cancelIdleCallback;
+        if (typeof cancel === "function") cancel(id);
+      };
+    }
+    const t = window.setTimeout(() => setMount3D(true), 1200);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
     <section className="hero-gradient py-20 md:py-28 relative overflow-hidden min-h-[700px]">
-      {/* 3D Background */}
-      <Suspense fallback={null}>
-        <Hero3D />
-      </Suspense>
+      {/* 3D Background — deferred to keep main thread free for input */}
+      {mount3D && (
+        <Suspense fallback={null}>
+          <Hero3D />
+        </Suspense>
+      )}
       
       {/* Gradient overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30 pointer-events-none" />
