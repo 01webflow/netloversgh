@@ -15,4 +15,22 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Group lazy-loaded route chunks so admin/agent code never lands in the main bundle.
+        manualChunks(id) {
+          if (id.includes("/src/pages/admin/")) return "admin";
+          if (id.includes("/src/pages/agent/")) return "agent";
+          // Heavy 3D libs already loaded only with Hero3D, but isolate them too.
+          if (
+            id.includes("node_modules/three") ||
+            id.includes("node_modules/@react-three")
+          ) {
+            return "three";
+          }
+        },
+      },
+    },
+  },
 }));
