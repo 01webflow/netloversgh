@@ -182,10 +182,19 @@ serve(async (req) => {
               console.error("Failed to send order notification:", notifError);
             }
 
-            console.log("Order payment processed via webhook:", { 
-              orderId: metadata.orderId, 
-              amount: amountInCedis 
+            console.log("Order payment processed via webhook:", {
+              orderId: metadata.orderId,
+              amount: amountInCedis
             });
+
+            // Trigger DataHub fulfillment
+            try {
+              await supabase.functions.invoke("fulfill-order", {
+                body: { orderId: metadata.orderId },
+              });
+            } catch (fErr) {
+              console.error("fulfill-order invocation failed:", fErr);
+            }
           }
         }
         break;

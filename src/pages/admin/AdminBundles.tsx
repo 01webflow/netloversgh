@@ -44,7 +44,16 @@ interface Bundle {
   delivery_type: string | null;
   is_active: boolean | null;
   created_at: string | null;
+  provider_network_key: string | null;
+  provider_capacity: string | null;
 }
+
+const NETWORK_KEY_OPTIONS = [
+  { value: "YELLO", label: "MTN (YELLO)" },
+  { value: "TELECEL", label: "Telecel (TELECEL)" },
+  { value: "AT_PREMIUM", label: "AirtelTigo iShare (AT_PREMIUM)" },
+  { value: "AT_BIGTIME", label: "AirtelTigo BigTime (AT_BIGTIME)" },
+];
 
 const AdminBundles = () => {
   const { user, loading: authLoading } = useAuth();
@@ -66,6 +75,8 @@ const AdminBundles = () => {
     data_amount: "",
     price: "",
     delivery_type: "instant",
+    provider_network_key: "YELLO",
+    provider_capacity: "",
   });
 
   useEffect(() => {
@@ -109,6 +120,8 @@ const AdminBundles = () => {
       data_amount: "",
       price: "",
       delivery_type: "instant",
+      provider_network_key: "YELLO",
+      provider_capacity: "",
     });
     setDialogOpen(true);
   };
@@ -121,6 +134,8 @@ const AdminBundles = () => {
       data_amount: bundle.data_amount,
       price: bundle.price.toString(),
       delivery_type: bundle.delivery_type || "instant",
+      provider_network_key: bundle.provider_network_key || "YELLO",
+      provider_capacity: bundle.provider_capacity || "",
     });
     setDialogOpen(true);
   };
@@ -138,40 +153,29 @@ const AdminBundles = () => {
     setProcessing(true);
 
     try {
+      const payload = {
+        name: formData.name,
+        provider: formData.provider,
+        data_amount: formData.data_amount,
+        price: parseFloat(formData.price),
+        delivery_type: formData.delivery_type,
+        provider_network_key: formData.provider_network_key,
+        provider_capacity: formData.provider_capacity || null,
+      };
+
       if (editingBundle) {
         const { error } = await supabase
           .from("data_bundles")
-          .update({
-            name: formData.name,
-            provider: formData.provider,
-            data_amount: formData.data_amount,
-            price: parseFloat(formData.price),
-            delivery_type: formData.delivery_type,
-          })
+          .update(payload)
           .eq("id", editingBundle.id);
-
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Bundle updated successfully",
-        });
+        toast({ title: "Success", description: "Bundle updated successfully" });
       } else {
-        const { error } = await supabase.from("data_bundles").insert({
-          name: formData.name,
-          provider: formData.provider,
-          data_amount: formData.data_amount,
-          price: parseFloat(formData.price),
-          delivery_type: formData.delivery_type,
-          is_active: true,
-        });
-
+        const { error } = await supabase
+          .from("data_bundles")
+          .insert({ ...payload, is_active: true });
         if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Bundle created successfully",
-        });
+        toast({ title: "Success", description: "Bundle created successfully" });
       }
 
       fetchBundles();
@@ -428,6 +432,38 @@ const AdminBundles = () => {
                     <SelectItem value="midnight">Midnight</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
+              <div className="text-sm font-semibold">DataHub Provider Mapping</div>
+              <p className="text-xs text-muted-foreground">
+                Used to fulfill orders automatically via DataHub Ghana API.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="provider_network_key">Network Key</Label>
+                  <Select
+                    value={formData.provider_network_key}
+                    onValueChange={(value) => setFormData({ ...formData, provider_network_key: value })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {NETWORK_KEY_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="provider_capacity">Capacity (GB)</Label>
+                  <Input
+                    id="provider_capacity"
+                    value={formData.provider_capacity}
+                    onChange={(e) => setFormData({ ...formData, provider_capacity: e.target.value })}
+                    placeholder="e.g., 1, 2, 5"
+                  />
+                </div>
               </div>
             </div>
           </div>
