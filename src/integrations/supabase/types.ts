@@ -220,6 +220,8 @@ export type Database = {
           name: string
           price: number
           provider: string
+          provider_capacity: string | null
+          provider_network_key: string | null
         }
         Insert: {
           created_at?: string | null
@@ -230,6 +232,8 @@ export type Database = {
           name: string
           price: number
           provider: string
+          provider_capacity?: string | null
+          provider_network_key?: string | null
         }
         Update: {
           created_at?: string | null
@@ -240,6 +244,8 @@ export type Database = {
           name?: string
           price?: number
           provider?: string
+          provider_capacity?: string | null
+          provider_network_key?: string | null
         }
         Relationships: []
       }
@@ -248,12 +254,14 @@ export type Database = {
           bundle_id: string | null
           created_at: string | null
           data_amount: string
+          external_reference: string | null
           id: string
           order_status: string | null
           package_name: string
           payment_method: string | null
           payment_status: string | null
           price: number
+          provider_status: string | null
           recipient_phone: string
           referred_by_agent_id: string | null
           user_id: string
@@ -262,12 +270,14 @@ export type Database = {
           bundle_id?: string | null
           created_at?: string | null
           data_amount: string
+          external_reference?: string | null
           id?: string
           order_status?: string | null
           package_name: string
           payment_method?: string | null
           payment_status?: string | null
           price: number
+          provider_status?: string | null
           recipient_phone: string
           referred_by_agent_id?: string | null
           user_id: string
@@ -276,12 +286,14 @@ export type Database = {
           bundle_id?: string | null
           created_at?: string | null
           data_amount?: string
+          external_reference?: string | null
           id?: string
           order_status?: string | null
           package_name?: string
           payment_method?: string | null
           payment_status?: string | null
           price?: number
+          provider_status?: string | null
           recipient_phone?: string
           referred_by_agent_id?: string | null
           user_id?: string
