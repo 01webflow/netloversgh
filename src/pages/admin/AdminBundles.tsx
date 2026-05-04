@@ -434,6 +434,38 @@ const AdminBundles = () => {
                 </Select>
               </div>
             </div>
+
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
+              <div className="text-sm font-semibold">DataHub Provider Mapping</div>
+              <p className="text-xs text-muted-foreground">
+                Used to fulfill orders automatically via DataHub Ghana API.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="provider_network_key">Network Key</Label>
+                  <Select
+                    value={formData.provider_network_key}
+                    onValueChange={(value) => setFormData({ ...formData, provider_network_key: value })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {NETWORK_KEY_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="provider_capacity">Capacity (GB)</Label>
+                  <Input
+                    id="provider_capacity"
+                    value={formData.provider_capacity}
+                    onChange={(e) => setFormData({ ...formData, provider_capacity: e.target.value })}
+                    placeholder="e.g., 1, 2, 5"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <DialogFooter>
