@@ -89,6 +89,13 @@ serve(async (req) => {
       if (orderError) throw orderError;
 
       console.log("Order payment processed:", { orderId, amount: amountPaid });
+
+      // Trigger DataHub fulfillment (best-effort)
+      try {
+        await supabase.functions.invoke("fulfill-order", { body: { orderId } });
+      } catch (fErr) {
+        console.error("fulfill-order invocation failed:", fErr);
+      }
     }
 
     return new Response(JSON.stringify({
