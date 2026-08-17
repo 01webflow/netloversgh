@@ -149,8 +149,31 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // AuthZ: backend (service role), admins, or the user themselves
+    const serviceCall = isServiceRole(req);
+    let caller: { id: string; email: string | null } | null = null;
+    if (!serviceCall) {
+      caller = await getAuthenticatedUser(req);
+      if (!caller) return unauthorized(corsHeaders);
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { type, user_id, data, channel = "email" }: NotificationRequest = await req.json();
+    const body: NotificationRequest = await req.json();
+    const { type, data, channel = "email" } = body;
+    let { user_id } = body;
+
+    if (!serviceCall && caller) {
+      const callerIsAdmin = await isAdmin(caller.id);
+      if (!callerIsAdmin) user_id = caller.id;
+    }
+
+    if (!user_id) {
+      return new Response(JSON.stringify({ error: "user_id is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
 
     // Get user info
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(user_id);
