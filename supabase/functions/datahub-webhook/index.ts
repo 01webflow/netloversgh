@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type, x-webhook-event, x-webhook-timestamp, user-agent",
+  "Access-Control-Allow-Headers": "authorization, content-type, x-webhook-event, x-webhook-timestamp, x-webhook-secret, x-webhook-signature, user-agent",
 };
 
 function mapStatus(s: string) {
@@ -15,16 +15,53 @@ function mapStatus(s: string) {
   return "processing";
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+async function hmacSha256Hex(secret: string, body: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(body));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const ua = req.headers.get("user-agent") || "";
-    if (!ua.includes("DatahubGH")) {
-      console.warn("Unexpected User-Agent on datahub-webhook:", ua);
+    const webhookSecret = Deno.env.get("DATAHUB_WEBHOOK_SECRET");
+    if (!webhookSecret) {
+      console.error("DATAHUB_WEBHOOK_SECRET not configured");
+      return new Response(JSON.stringify({ error: "Server configuration error" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const event = await req.json();
+    const rawBody = await req.text();
+
+    // Authenticate the webhook: shared secret (header or ?token=) or HMAC signature
+    const url = new URL(req.url);
+    const providedSecret = req.headers.get("x-webhook-secret") || url.searchParams.get("token") || "";
+    const providedSignature = (req.headers.get("x-webhook-signature") || "").replace(/^sha256=/i, "").toLowerCase();
+
+    let authorized = providedSecret ? timingSafeEqual(providedSecret, webhookSecret) : false;
+    if (!authorized && providedSignature) {
+      authorized = timingSafeEqual(providedSignature, await hmacSha256Hex(webhookSecret, rawBody));
+    }
+
+    if (!authorized) {
+      console.warn("Rejected unauthenticated datahub-webhook request");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const event = JSON.parse(rawBody);
+
     console.log("DataHub webhook:", event?.event, event?.data?.reference);
 
     if (event?.event !== "order.status_updated" || !event?.data) {

@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getAuthenticatedUser, isAdmin, isServiceRole, unauthorized } from "../_shared/auth.ts";
+
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -225,29 +227,47 @@ serve(async (req) => {
   }
 
   try {
+    // AuthZ: only the backend (service role), admins, or the recipient themselves
+    const serviceCall = isServiceRole(req);
+    let caller: { id: string; email: string | null } | null = null;
+    if (!serviceCall) {
+      caller = await getAuthenticatedUser(req);
+      if (!caller) return unauthorized(corsHeaders);
+    }
+
     const requestBody = await req.json() as EmailRequest;
     const { type, to, user_id, data } = requestBody;
-    
-    // Support both direct email and user_id lookup
+
+    let targetUserId = user_id;
     let recipientEmail = to;
-    
-    if (!recipientEmail && user_id) {
+
+    if (!serviceCall && caller) {
+      const callerIsAdmin = await isAdmin(caller.id);
+      if (!callerIsAdmin) {
+        // Non-admins may only email themselves
+        targetUserId = caller.id;
+        recipientEmail = caller.email ?? undefined;
+      }
+    }
+
+    if (!recipientEmail && targetUserId) {
       // Look up user email from Supabase
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      
-      const userResponse = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user_id}`, {
+
+      const userResponse = await fetch(`${supabaseUrl}/auth/v1/admin/users/${targetUserId}`, {
         headers: {
           "Authorization": `Bearer ${supabaseServiceKey}`,
           "apikey": supabaseServiceKey,
         },
       });
-      
+
       if (userResponse.ok) {
         const userData = await userResponse.json();
         recipientEmail = userData.email;
       }
     }
+
     
     if (!recipientEmail) {
       console.error("No recipient email found");

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getAuthenticatedUser, isServiceRole, unauthorized } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,19 +18,28 @@ serve(async (req) => {
       throw new Error("Paystack secret key not configured");
     }
 
+    // Require a signed-in caller (or an internal service-role call)
+    const serviceCall = isServiceRole(req);
+    const caller = serviceCall ? null : await getAuthenticatedUser(req);
+    if (!serviceCall && !caller) return unauthorized(corsHeaders);
+
     const { reference } = await req.json();
+    if (typeof reference !== "string" || reference.length < 4 || reference.length > 128) {
+      return new Response(JSON.stringify({ error: "Invalid reference" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     console.log("Verifying payment reference:", reference);
 
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
       headers: {
         "Authorization": `Bearer ${paystackSecretKey}`,
       },
     });
 
     const data = await response.json();
-    console.log("Verification response:", data);
 
-    if (!data.status || data.data.status !== "success") {
+    if (!data.status || data.data?.status !== "success") {
       return new Response(JSON.stringify({
         success: false,
         message: "Payment not successful",
@@ -43,8 +53,27 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { userId, type, orderId } = data.data.metadata;
+    const { userId, type, orderId } = data.data.metadata ?? {};
     const amountPaid = data.data.amount / 100; // Convert from pesewas to cedis
+
+    // A signed-in caller may only settle their own transaction
+    if (caller && userId && userId !== caller.id) {
+      return unauthorized(corsHeaders);
+    }
+
+    // Idempotency: skip if this reference was already credited
+    const { data: existingTx } = await supabase
+      .from("transactions")
+      .select("id")
+      .eq("reference", reference)
+      .maybeSingle();
+
+    if (existingTx) {
+      return new Response(JSON.stringify({ success: true, amount: amountPaid, type, alreadyProcessed: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     if (type === "wallet_topup") {
       // Credit the user's wallet
