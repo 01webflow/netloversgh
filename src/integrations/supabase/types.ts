@@ -212,6 +212,7 @@ export type Database = {
       }
       data_bundles: {
         Row: {
+          cost_price: number | null
           created_at: string | null
           data_amount: string
           delivery_type: string | null
@@ -222,8 +223,11 @@ export type Database = {
           provider: string
           provider_capacity: string | null
           provider_network_key: string | null
+          provider_product_id: string | null
+          provider_source: string
         }
         Insert: {
+          cost_price?: number | null
           created_at?: string | null
           data_amount: string
           delivery_type?: string | null
@@ -234,8 +238,11 @@ export type Database = {
           provider: string
           provider_capacity?: string | null
           provider_network_key?: string | null
+          provider_product_id?: string | null
+          provider_source?: string
         }
         Update: {
+          cost_price?: number | null
           created_at?: string | null
           data_amount?: string
           delivery_type?: string | null
@@ -246,6 +253,8 @@ export type Database = {
           provider?: string
           provider_capacity?: string | null
           provider_network_key?: string | null
+          provider_product_id?: string | null
+          provider_source?: string
         }
         Relationships: []
       }
