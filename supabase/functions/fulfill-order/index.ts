@@ -1,5 +1,5 @@
-// Fulfill a paid order via DataHub Ghana API
-// https://app.datahubgh.com/api/external/data-purchase
+// Fulfill a paid order via the Datasika Developer API
+// https://datasika.com/developers/docs
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
@@ -8,21 +8,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const DATAHUB_URL = "https://app.datahubgh.com/api/external/data-purchase";
+const DATASIKA_BASE = "https://nrsfvhztpzwkadwciizp.supabase.co/functions/v1";
 
-const PROVIDER_NETWORK_MAP: Record<string, string> = {
-  MTN: "YELLO",
-  Telecel: "TELECEL",
-  AirtelTigo: "AT_PREMIUM",
-  AT: "AT_PREMIUM",
-};
-
-// Map DataHub status → internal order_status
-function mapStatus(s: string): { order_status: string; payment_status?: string } {
-  const up = (s || "").toUpperCase();
-  if (up === "SUCCESSFUL") return { order_status: "completed" };
-  if (up === "FAILED" || up === "CANCELLED") return { order_status: "failed" };
-  return { order_status: "processing" };
+// Map Datasika status → internal order_status
+function mapStatus(s: string): string {
+  const v = (s || "").toLowerCase();
+  if (v === "delivered" || v === "completed") return "completed";
+  if (v === "failed" || v === "refunded" || v === "cancelled") return "failed";
+  return "processing";
 }
 
 serve(async (req) => {
@@ -34,13 +27,12 @@ serve(async (req) => {
   );
 
   try {
-    const apiKey = Deno.env.get("DATAHUB_API_KEY");
-    if (!apiKey) throw new Error("DATAHUB_API_KEY not configured");
+    const apiKey = Deno.env.get("DATASIKA_API_KEY");
+    if (!apiKey) throw new Error("DATASIKA_API_KEY not configured");
 
     const { orderId } = await req.json();
     if (!orderId) throw new Error("orderId is required");
 
-    // Load order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .select("*")
@@ -48,12 +40,11 @@ serve(async (req) => {
       .single();
     if (orderErr || !order) throw new Error(`Order not found: ${orderErr?.message}`);
 
-    // Guard: must be paid, not already completed, not yet sent to provider
     if (order.payment_status !== "paid") {
-      return new Response(
-        JSON.stringify({ success: false, error: "Order not paid yet" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, error: "Order not paid yet" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
     if (order.order_status === "completed" || order.external_reference) {
       return new Response(
@@ -62,88 +53,83 @@ serve(async (req) => {
       );
     }
 
-    // Resolve bundle provider config
-    let networkKey: string | null = null;
-    let capacity: string | null = null;
+    // Resolve supplier product
+    let productId: string | null = null;
     if (order.bundle_id) {
       const { data: bundle } = await supabase
         .from("data_bundles")
-        .select("provider_network_key, provider_capacity, provider, data_amount")
+        .select("provider_product_id")
         .eq("id", order.bundle_id)
         .maybeSingle();
-      if (bundle) {
-        networkKey = bundle.provider_network_key || PROVIDER_NETWORK_MAP[bundle.provider] || null;
-        capacity = bundle.provider_capacity || (bundle.data_amount?.match(/(\d+(?:\.\d+)?)/)?.[1] ?? null);
-      }
+      productId = bundle?.provider_product_id ?? null;
     }
 
-    if (!networkKey || !capacity) {
-      await supabase.from("orders").update({
-        provider_status: "config_missing",
-      }).eq("id", orderId);
-      throw new Error("Bundle is missing provider_network_key or provider_capacity. Configure it in Admin → Bundles.");
+    if (!productId) {
+      await supabase.from("orders").update({ provider_status: "config_missing" }).eq("id", orderId);
+      throw new Error("Bundle has no supplier product mapping. Sync the catalog in Admin → Bundles.");
     }
 
-    // Validate recipient
     const recipient = (order.recipient_phone || "").trim();
     if (!/^0\d{9}$/.test(recipient)) {
       throw new Error("Invalid recipient phone — must be 10 digits starting with 0");
     }
 
-    console.log("Dispatching to DataHub:", { orderId, networkKey, capacity, recipient });
+    console.log("Dispatching to Datasika:", { orderId, productId, recipient });
 
-    const dhRes = await fetch(DATAHUB_URL, {
+    const res = await fetch(`${DATASIKA_BASE}/api-buy-data`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
+        "Idempotency-Key": `order-${orderId}`,
       },
-      body: JSON.stringify({ networkKey, recipient, capacity }),
+      body: JSON.stringify({ product_id: productId, recipient }),
     });
-    const dhBody = await dhRes.json().catch(() => ({}));
-    console.log("DataHub response:", dhRes.status, dhBody);
+    const body = await res.json().catch(() => ({}));
+    console.log("Datasika response:", res.status, body);
 
-    if (!dhRes.ok || !dhBody?.success) {
-      const errMsg = dhBody?.error || `DataHub HTTP ${dhRes.status}`;
-      await supabase.from("orders").update({
-        provider_status: `error: ${errMsg}`.slice(0, 250),
-      }).eq("id", orderId);
-      // Audit
+    if (!res.ok || !body?.order_id) {
+      const errMsg = body?.code || body?.error || body?.message || `Datasika HTTP ${res.status}`;
+      await supabase
+        .from("orders")
+        .update({ provider_status: `error: ${errMsg}`.slice(0, 250) })
+        .eq("id", orderId);
       await supabase.from("audit_logs").insert({
         user_id: order.user_id,
         action: "fulfillment_failed",
         entity: "orders",
         entity_id: orderId,
-        metadata: { provider: "datahub", error: errMsg, request: { networkKey, capacity, recipient } },
+        metadata: { provider: "datasika", error: errMsg, request: { productId, recipient } },
       });
-      return new Response(
-        JSON.stringify({ success: false, error: errMsg }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: false, error: errMsg, status: res.status }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const reference = dhBody.data?.reference || dhBody.data?.orderNumber?.toString() || null;
-    const providerStatus = dhBody.data?.status || "PROCESSING";
-    const mapped = mapStatus(providerStatus);
+    const reference = body.order_id as string;
+    const providerStatus = (body.status as string) || "pending";
 
-    await supabase.from("orders").update({
-      external_reference: reference,
-      provider_status: providerStatus,
-      order_status: mapped.order_status,
-    }).eq("id", orderId);
+    await supabase
+      .from("orders")
+      .update({
+        external_reference: reference,
+        provider_status: providerStatus,
+        order_status: mapStatus(providerStatus),
+      })
+      .eq("id", orderId);
 
     await supabase.from("audit_logs").insert({
       user_id: order.user_id,
       action: "fulfillment_dispatched",
       entity: "orders",
       entity_id: orderId,
-      metadata: { provider: "datahub", reference, providerStatus },
+      metadata: { provider: "datasika", reference, providerStatus, amount_charged: body.amount_charged },
     });
 
-    return new Response(
-      JSON.stringify({ success: true, reference, status: providerStatus }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, reference, status: providerStatus }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("fulfill-order error:", message);
