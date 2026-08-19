@@ -245,9 +245,15 @@ const AdminBundles = () => {
             <Package className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Bundle Management</h1>
           </div>
-          <Button onClick={openCreateDialog}>
-            <Plus className="h-4 w-4 mr-2" /> Add Bundle
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleSyncCatalog} disabled={syncing}>
+              {syncing ? "Syncing…" : "Sync Datasika Catalog"}
+            </Button>
+            <Button onClick={openCreateDialog}>
+              <Plus className="h-4 w-4 mr-2" /> Add Bundle
+            </Button>
+          </div>
+
         </div>
 
         <Card>
