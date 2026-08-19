@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Wifi, Users } from "lucide-react";
+import { Menu, X, Users } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
+import logoAsset from "@/assets/netloversgh-logo.png.asset.json";
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
