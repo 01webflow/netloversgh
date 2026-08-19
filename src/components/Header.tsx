@@ -28,12 +28,19 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <Wifi className="h-6 w-6 text-primary" />
+            <img
+              src={logoAsset.url}
+              alt="NetLoversGH logo"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg"
+            />
             <span className="text-xl font-semibold">
               <span className="text-primary">NetLovers</span>
               <span className="text-foreground">GH</span>
             </span>
           </Link>
+
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
