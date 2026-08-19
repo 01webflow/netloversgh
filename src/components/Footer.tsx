@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { Wifi } from "lucide-react";
+import logoAsset from "@/assets/netloversgh-logo.png.asset.json";
 const Footer = () => {
   return <footer className="bg-card border-t border-border py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2">
-            <Wifi className="h-5 w-5 text-primary" />
+            <img src={logoAsset.url} alt="NetLoversGH logo" width={24} height={24} loading="lazy" className="h-6 w-6 rounded" />
+
             <span className="text-lg font-semibold">
               <span className="text-primary">NetLovers</span>
               <span className="text-foreground">GH</span>
