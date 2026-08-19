@@ -5,7 +5,6 @@ import ThemeToggle from "@/components/theme/ThemeToggle";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
-import logoAsset from "@/assets/netloversgh-logo.png.asset.json";
 
 
 const Header = () => {
@@ -29,7 +28,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img
-              src={logoAsset.url}
+              src="/logo.png"
               alt="NetLoversGH logo"
               width={32}
               height={32}
