@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Wifi, Users } from "lucide-react";
+import { Menu, X, Users } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAgentStatus } from "@/hooks/useAgentStatus";
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,12 +27,19 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <Wifi className="h-6 w-6 text-primary" />
+            <img
+              src="/logo.png"
+              alt="NetLoversGH logo"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg"
+            />
             <span className="text-xl font-semibold">
               <span className="text-primary">NetLovers</span>
               <span className="text-foreground">GH</span>
             </span>
           </Link>
+
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">

@@ -68,6 +68,7 @@ const AdminBundles = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -104,6 +105,28 @@ const AdminBundles = () => {
       setBundles(data || []);
     }
     setLoading(false);
+  };
+
+  const handleSyncCatalog = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("datasika-sync-catalog");
+      if (error) throw error;
+      toast({
+        title: "Catalog synced",
+        description: `${data?.created ?? 0} added, ${data?.updated ?? 0} updated, ${data?.retired ?? 0} retired.`,
+      });
+      fetchBundles();
+    } catch (err) {
+      console.error("Catalog sync failed:", err);
+      toast({
+        title: "Sync failed",
+        description: err instanceof Error ? err.message : "Could not sync the supplier catalog",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
   };
 
   useEffect(() => {
@@ -245,9 +268,15 @@ const AdminBundles = () => {
             <Package className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Bundle Management</h1>
           </div>
-          <Button onClick={openCreateDialog}>
-            <Plus className="h-4 w-4 mr-2" /> Add Bundle
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleSyncCatalog} disabled={syncing}>
+              {syncing ? "Syncing…" : "Sync Datasika Catalog"}
+            </Button>
+            <Button onClick={openCreateDialog}>
+              <Plus className="h-4 w-4 mr-2" /> Add Bundle
+            </Button>
+          </div>
+
         </div>
 
         <Card>

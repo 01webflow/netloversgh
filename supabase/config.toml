@@ -20,3 +20,10 @@ verify_jwt = false
 
 [functions.fulfill-order]
 verify_jwt = false
+
+[functions.datasika-sync-catalog]
+verify_jwt = false
+
+[functions.datasika-order-status]
+verify_jwt = false
+
