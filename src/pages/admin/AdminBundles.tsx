@@ -68,6 +68,7 @@ const AdminBundles = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBundle, setEditingBundle] = useState<Bundle | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
