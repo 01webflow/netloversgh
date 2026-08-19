@@ -106,6 +106,28 @@ const AdminBundles = () => {
     setLoading(false);
   };
 
+  const handleSyncCatalog = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("datasika-sync-catalog");
+      if (error) throw error;
+      toast({
+        title: "Catalog synced",
+        description: `${data?.created ?? 0} added, ${data?.updated ?? 0} updated, ${data?.retired ?? 0} retired.`,
+      });
+      fetchBundles();
+    } catch (err) {
+      console.error("Catalog sync failed:", err);
+      toast({
+        title: "Sync failed",
+        description: err instanceof Error ? err.message : "Could not sync the supplier catalog",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchBundles();
