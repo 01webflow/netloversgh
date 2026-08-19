@@ -6,7 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 // Eagerly loaded: landing + auth + core public pages (needed for first paint / SEO).
 import Index from "./pages/Index";
@@ -15,34 +16,34 @@ import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 // Lazy-loaded public pages (not needed on initial load)
-const PricingPage = lazy(() => import("./pages/Pricing"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Community = lazy(() => import("./pages/Community"));
-const Bundles = lazy(() => import("./pages/Bundles"));
-const BundleDetail = lazy(() => import("./pages/BundleDetail"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const Cart = lazy(() => import("./pages/Cart"));
-const FAQ = lazy(() => import("./pages/FAQ"));
+const PricingPage = lazyWithRetry(() => import("./pages/Pricing"));
+const Contact = lazyWithRetry(() => import("./pages/Contact"));
+const Community = lazyWithRetry(() => import("./pages/Community"));
+const Bundles = lazyWithRetry(() => import("./pages/Bundles"));
+const BundleDetail = lazyWithRetry(() => import("./pages/BundleDetail"));
+const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
+const Cart = lazyWithRetry(() => import("./pages/Cart"));
+const FAQ = lazyWithRetry(() => import("./pages/FAQ"));
 
 // Lazy-loaded user dashboard
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const DashboardOrders = lazy(() => import("./pages/DashboardOrders"));
-const DashboardWallet = lazy(() => import("./pages/DashboardWallet"));
-const DashboardAccount = lazy(() => import("./pages/DashboardAccount"));
-const OrderTracking = lazy(() => import("./pages/OrderTracking"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const DashboardOrders = lazyWithRetry(() => import("./pages/DashboardOrders"));
+const DashboardWallet = lazyWithRetry(() => import("./pages/DashboardWallet"));
+const DashboardAccount = lazyWithRetry(() => import("./pages/DashboardAccount"));
+const OrderTracking = lazyWithRetry(() => import("./pages/OrderTracking"));
 
 // Lazy-loaded admin bundle (separate chunk – only loaded when an admin visits /admin/*)
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
-const AdminBundles = lazy(() => import("./pages/admin/AdminBundles"));
-const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
-const AdminAgents = lazy(() => import("./pages/admin/AdminAgents"));
-const AdminPayouts = lazy(() => import("./pages/admin/AdminPayouts"));
+const AdminDashboard = lazyWithRetry(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazyWithRetry(() => import("./pages/admin/AdminUsers"));
+const AdminOrders = lazyWithRetry(() => import("./pages/admin/AdminOrders"));
+const AdminBundles = lazyWithRetry(() => import("./pages/admin/AdminBundles"));
+const AdminAuditLogs = lazyWithRetry(() => import("./pages/admin/AdminAuditLogs"));
+const AdminAgents = lazyWithRetry(() => import("./pages/admin/AdminAgents"));
+const AdminPayouts = lazyWithRetry(() => import("./pages/admin/AdminPayouts"));
 
 // Lazy-loaded agent bundle (separate chunk – only loaded when an agent visits /agent/*)
-const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
-const AgentApply = lazy(() => import("./pages/agent/AgentApply"));
+const AgentDashboard = lazyWithRetry(() => import("./pages/agent/AgentDashboard"));
+const AgentApply = lazyWithRetry(() => import("./pages/agent/AgentApply"));
 
 const queryClient = new QueryClient();
 
