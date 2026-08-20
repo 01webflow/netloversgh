@@ -357,6 +357,57 @@ export type Database = {
         }
         Relationships: []
       }
+      service_orders: {
+        Row: {
+          account_number: string
+          amount: number
+          created_at: string
+          details: Json | null
+          external_reference: string | null
+          id: string
+          order_status: string
+          package_name: string
+          payment_method: string | null
+          payment_status: string
+          provider: string
+          service_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          amount: number
+          created_at?: string
+          details?: Json | null
+          external_reference?: string | null
+          id?: string
+          order_status?: string
+          package_name: string
+          payment_method?: string | null
+          payment_status?: string
+          provider: string
+          service_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          amount?: number
+          created_at?: string
+          details?: Json | null
+          external_reference?: string | null
+          id?: string
+          order_status?: string
+          package_name?: string
+          payment_method?: string | null
+          payment_status?: string
+          provider?: string
+          service_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
