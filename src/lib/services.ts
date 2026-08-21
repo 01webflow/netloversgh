@@ -19,9 +19,25 @@ export interface ServiceProviderOption {
   name: string;
 }
 
+export type ServiceCategory =
+  | "Utilities"
+  | "Telecom"
+  | "Education"
+  | "Entertainment";
+
+export const SERVICE_CATEGORIES: ServiceCategory[] = [
+  "Utilities",
+  "Telecom",
+  "Education",
+  "Entertainment",
+];
+
 export interface ServiceDefinition {
   slug: string;
   type: string;
+  category: ServiceCategory;
+  /** extra search terms */
+  keywords?: string[];
   title: string;
   tagline: string;
   icon: LucideIcon;
@@ -42,6 +58,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "electricity",
     type: "electricity",
+    category: "Utilities",
+    keywords: ["ecg", "prepaid", "meter", "power", "light", "nedco"],
     title: "ECG Electricity",
     tagline: "Top up your prepaid meter instantly",
     icon: Zap,
@@ -59,6 +77,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "water",
     type: "water",
+    category: "Utilities",
+    keywords: ["gwcl", "ghana water", "bill", "tap"],
     title: "Ghana Water",
     tagline: "Settle your GWCL bill in seconds",
     icon: Droplets,
@@ -72,6 +92,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "airtime",
     type: "airtime",
+    category: "Telecom",
+    keywords: ["credit", "recharge", "mtn", "telecel", "airteltigo", "top up"],
     title: "Airtime Top-up",
     tagline: "Instant credit on every network",
     icon: Phone,
@@ -91,6 +113,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "mtn-afa",
     type: "afa",
+    category: "Telecom",
+    keywords: ["mtn afa", "sim", "registration"],
     title: "MTN AFA Registration",
     tagline: "Register a new AFA SIM profile",
     icon: IdCard,
@@ -105,6 +129,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "result-checker",
     type: "result_checker",
+    category: "Education",
+    keywords: ["waec", "bece", "wassce", "checker", "pin", "cssps", "school placement"],
     title: "Result Checkers",
     tagline: "WAEC checker PINs delivered instantly",
     icon: GraduationCap,
@@ -123,6 +149,8 @@ export const SERVICES: ServiceDefinition[] = [
   {
     slug: "tv",
     type: "tv",
+    category: "Entertainment",
+    keywords: ["dstv", "gotv", "startimes", "decoder", "subscription"],
     title: "TV Subscriptions",
     tagline: "DStv, GOtv and StarTimes renewals",
     icon: Tv,
