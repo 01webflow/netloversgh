@@ -24,6 +24,8 @@ const BundleDetail = lazyWithRetry(() => import("./pages/BundleDetail"));
 const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
 const Cart = lazyWithRetry(() => import("./pages/Cart"));
 const FAQ = lazyWithRetry(() => import("./pages/FAQ"));
+const Services = lazyWithRetry(() => import("./pages/Services"));
+const ServiceCheckout = lazyWithRetry(() => import("./pages/ServiceCheckout"));
 
 // Lazy-loaded user dashboard
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
@@ -31,6 +33,7 @@ const DashboardOrders = lazyWithRetry(() => import("./pages/DashboardOrders"));
 const DashboardWallet = lazyWithRetry(() => import("./pages/DashboardWallet"));
 const DashboardAccount = lazyWithRetry(() => import("./pages/DashboardAccount"));
 const OrderTracking = lazyWithRetry(() => import("./pages/OrderTracking"));
+const DashboardServices = lazyWithRetry(() => import("./pages/DashboardServices"));
 
 // Lazy-loaded admin bundle (separate chunk – only loaded when an admin visits /admin/*)
 const AdminDashboard = lazyWithRetry(() => import("./pages/admin/AdminDashboard"));
@@ -40,6 +43,7 @@ const AdminBundles = lazyWithRetry(() => import("./pages/admin/AdminBundles"));
 const AdminAuditLogs = lazyWithRetry(() => import("./pages/admin/AdminAuditLogs"));
 const AdminAgents = lazyWithRetry(() => import("./pages/admin/AdminAgents"));
 const AdminPayouts = lazyWithRetry(() => import("./pages/admin/AdminPayouts"));
+const AdminServices = lazyWithRetry(() => import("./pages/admin/AdminServices"));
 
 // Lazy-loaded agent bundle (separate chunk – only loaded when an agent visits /agent/*)
 const AgentDashboard = lazyWithRetry(() => import("./pages/agent/AgentDashboard"));
@@ -83,6 +87,9 @@ const App = () => (
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/faq" element={<FAQ />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/services/:slug" element={<ServiceCheckout />} />
+                  <Route path="/dashboard/services" element={<DashboardServices />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/users" element={<AdminUsers />} />
                   <Route path="/admin/orders" element={<AdminOrders />} />
@@ -90,6 +97,7 @@ const App = () => (
                   <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
                   <Route path="/admin/agents" element={<AdminAgents />} />
                   <Route path="/admin/payouts" element={<AdminPayouts />} />
+                  <Route path="/admin/services" element={<AdminServices />} />
                   <Route path="/agent/dashboard" element={<AgentDashboard />} />
                   <Route path="/agent/apply" element={<AgentApply />} />
                   <Route path="*" element={<NotFound />} />

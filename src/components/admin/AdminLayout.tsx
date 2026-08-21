@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Shield, Users, Package, FileText, Home, Wifi, LogOut, Database, UserCheck, DollarSign } from "lucide-react";
+import { Shield, Users, Package, FileText, Home, Wifi, LogOut, Database, UserCheck, DollarSign, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -19,6 +19,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { title: "Bundles", href: "/admin/bundles", icon: Database },
     { title: "Agents", href: "/admin/agents", icon: UserCheck },
     { title: "Payouts", href: "/admin/payouts", icon: DollarSign },
+    { title: "Services", href: "/admin/services", icon: Sparkles },
     { title: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
   ];
 
