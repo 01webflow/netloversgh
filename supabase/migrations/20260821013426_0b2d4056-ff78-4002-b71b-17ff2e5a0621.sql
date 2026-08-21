@@ -1,0 +1,1 @@
+GRANT UPDATE ON public.service_orders TO authenticated;

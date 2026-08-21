@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Wifi,
   Users,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,8 @@ import { Link } from "react-router-dom";
 const mainMenuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Buy Data", url: "/bundles", icon: ShoppingCart },
+  { title: "Pay Bills & Services", url: "/services", icon: Zap },
+  { title: "My Services", url: "/dashboard/services", icon: Package },
   { title: "Wallet", url: "/dashboard/wallet", icon: Wallet },
   { title: "Transactions", url: "/dashboard/transactions", icon: Receipt },
   { title: "Account Details", url: "/dashboard/account", icon: User },
