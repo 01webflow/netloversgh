@@ -34,6 +34,7 @@ const DashboardWallet = lazyWithRetry(() => import("./pages/DashboardWallet"));
 const DashboardAccount = lazyWithRetry(() => import("./pages/DashboardAccount"));
 const OrderTracking = lazyWithRetry(() => import("./pages/OrderTracking"));
 const DashboardServices = lazyWithRetry(() => import("./pages/DashboardServices"));
+const ServiceTracking = lazyWithRetry(() => import("./pages/ServiceTracking"));
 
 // Lazy-loaded admin bundle (separate chunk – only loaded when an admin visits /admin/*)
 const AdminDashboard = lazyWithRetry(() => import("./pages/admin/AdminDashboard"));
@@ -90,6 +91,7 @@ const App = () => (
                   <Route path="/services" element={<Services />} />
                   <Route path="/services/:slug" element={<ServiceCheckout />} />
                   <Route path="/dashboard/services" element={<DashboardServices />} />
+                  <Route path="/dashboard/service/:orderId" element={<ServiceTracking />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/users" element={<AdminUsers />} />
                   <Route path="/admin/orders" element={<AdminOrders />} />

@@ -101,7 +101,11 @@ const DashboardServices = () => {
                   </TableHeader>
                   <TableBody>
                     {orders.map((o) => (
-                      <TableRow key={o.id}>
+                      <TableRow
+                        key={o.id}
+                        onClick={() => navigate(`/dashboard/service/${o.id}`)}
+                        className="cursor-pointer transition-colors hover:bg-muted/50"
+                      >
                         <TableCell>
                           <span className="font-medium">{o.package_name}</span>
                           <span className="block text-xs text-muted-foreground uppercase">
