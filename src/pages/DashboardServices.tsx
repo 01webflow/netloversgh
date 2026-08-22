@@ -36,6 +36,8 @@ const statusClass = (status: string) => {
       return "bg-red-500/15 text-red-600";
     case "processing":
       return "bg-blue-500/15 text-blue-600";
+    case "dispatched":
+      return "bg-indigo-500/15 text-indigo-600";
     default:
       return "bg-yellow-500/15 text-yellow-700";
   }

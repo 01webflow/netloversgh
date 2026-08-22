@@ -182,6 +182,18 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
+          <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/services")}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Service Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">Bills, airtime & TV orders performance</p>
+            </CardContent>
+          </Card>
+
           <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/audit-logs")}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
