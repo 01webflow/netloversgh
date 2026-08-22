@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Loader2, Wallet } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -22,13 +22,17 @@ const ServiceCheckout = () => {
   const { slug } = useParams();
   const service = getService(slug);
   const navigate = useNavigate();
+  const location = useLocation();
+  const retry = (location.state as { retry?: { provider?: string; account?: string; amount?: number } } | null)?.retry;
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [provider, setProvider] = useState(service?.providers[0]?.id ?? "");
+  const [provider, setProvider] = useState(retry?.provider ?? service?.providers[0]?.id ?? "");
   const [packageId, setPackageId] = useState(service?.packages?.[0]?.id ?? "");
-  const [account, setAccount] = useState("");
-  const [customAmount, setCustomAmount] = useState("");
+  const [account, setAccount] = useState(retry?.account ?? "");
+  const [customAmount, setCustomAmount] = useState(
+    retry?.amount && !service?.packages?.length ? String(retry.amount) : ""
+  );
   const [balance, setBalance] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);

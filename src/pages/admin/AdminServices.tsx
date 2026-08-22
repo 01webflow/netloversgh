@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
+import { ServiceAnalytics } from "@/components/admin/ServiceAnalytics";
 
 interface ServiceOrder {
   id: string;
@@ -36,7 +37,7 @@ interface ServiceOrder {
   created_at: string;
 }
 
-const STATUSES = ["pending", "processing", "completed", "failed"];
+const STATUSES = ["pending", "processing", "dispatched", "completed", "failed"];
 
 const AdminServices = () => {
   const { user, loading: authLoading } = useAuth();
@@ -102,6 +103,8 @@ const AdminServices = () => {
             </SelectContent>
           </Select>
         </div>
+
+        <ServiceAnalytics orders={orders} onSelectPending={() => setFilter("pending")} />
 
         <div className="bg-background rounded-xl border border-border p-4">
           <Table>

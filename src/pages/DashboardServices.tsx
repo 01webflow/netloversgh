@@ -36,6 +36,8 @@ const statusClass = (status: string) => {
       return "bg-red-500/15 text-red-600";
     case "processing":
       return "bg-blue-500/15 text-blue-600";
+    case "dispatched":
+      return "bg-indigo-500/15 text-indigo-600";
     default:
       return "bg-yellow-500/15 text-yellow-700";
   }
@@ -101,7 +103,11 @@ const DashboardServices = () => {
                   </TableHeader>
                   <TableBody>
                     {orders.map((o) => (
-                      <TableRow key={o.id}>
+                      <TableRow
+                        key={o.id}
+                        onClick={() => navigate(`/dashboard/service/${o.id}`)}
+                        className="cursor-pointer transition-colors hover:bg-muted/50"
+                      >
                         <TableCell>
                           <span className="font-medium">{o.package_name}</span>
                           <span className="block text-xs text-muted-foreground uppercase">
